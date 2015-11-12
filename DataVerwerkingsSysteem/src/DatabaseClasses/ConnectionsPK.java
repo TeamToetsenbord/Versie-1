@@ -18,21 +18,26 @@ import javax.persistence.TemporalType;
  * @author School
  */
 @Embeddable
-public class GpsPositionDataPK implements Serializable {
+public class ConnectionsPK implements Serializable {
     @Basic(optional = false)
     @Column(name = "unit_id")
     private String unitId;
     @Basic(optional = false)
-    @Column(name = "event_date")
+    @Column(name = "begin_time")
     @Temporal(TemporalType.DATE)
-    private Date eventDate;
+    private Date beginTime;
+    @Basic(optional = false)
+    @Column(name = "end_time")
+    @Temporal(TemporalType.DATE)
+    private Date endTime;
 
-    public GpsPositionDataPK() {
+    public ConnectionsPK() {
     }
 
-    public GpsPositionDataPK(String unitId, Date eventDate) {
+    public ConnectionsPK(String unitId, Date beginTime, Date endTime) {
         this.unitId = unitId;
-        this.eventDate = eventDate;
+        this.beginTime = beginTime;
+        this.endTime = endTime;
     }
 
     public String getUnitId() {
@@ -43,33 +48,45 @@ public class GpsPositionDataPK implements Serializable {
         this.unitId = unitId;
     }
 
-    public Date getEventDate() {
-        return eventDate;
+    public Date getBeginTime() {
+        return beginTime;
     }
 
-    public void setEventDate(Date eventDate) {
-        this.eventDate = eventDate;
+    public void setBeginTime(Date beginTime) {
+        this.beginTime = beginTime;
+    }
+
+    public Date getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(Date endTime) {
+        this.endTime = endTime;
     }
 
     @Override
     public int hashCode() {
         int hash = 0;
         hash += (unitId != null ? unitId.hashCode() : 0);
-        hash += (eventDate != null ? eventDate.hashCode() : 0);
+        hash += (beginTime != null ? beginTime.hashCode() : 0);
+        hash += (endTime != null ? endTime.hashCode() : 0);
         return hash;
     }
 
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof GpsPositionDataPK)) {
+        if (!(object instanceof ConnectionsPK)) {
             return false;
         }
-        GpsPositionDataPK other = (GpsPositionDataPK) object;
+        ConnectionsPK other = (ConnectionsPK) object;
         if ((this.unitId == null && other.unitId != null) || (this.unitId != null && !this.unitId.equals(other.unitId))) {
             return false;
         }
-        if ((this.eventDate == null && other.eventDate != null) || (this.eventDate != null && !this.eventDate.equals(other.eventDate))) {
+        if ((this.beginTime == null && other.beginTime != null) || (this.beginTime != null && !this.beginTime.equals(other.beginTime))) {
+            return false;
+        }
+        if ((this.endTime == null && other.endTime != null) || (this.endTime != null && !this.endTime.equals(other.endTime))) {
             return false;
         }
         return true;
@@ -77,7 +94,7 @@ public class GpsPositionDataPK implements Serializable {
 
     @Override
     public String toString() {
-        return "DatabaseClasses.GpsPositionDataPK[ unitId=" + unitId + ", eventDate=" + eventDate + " ]";
+        return "DatabaseClasses.HsdpaConnectionsPK[ unitId=" + unitId + ", beginTime=" + beginTime + ", endTime=" + endTime + " ]";
     }
     
 }

@@ -17,7 +17,8 @@ import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- *
+ * Entity class for the overall_connections table.
+ * Used by the connections CSV.
  * @author School
  */
 @Entity
@@ -38,6 +39,12 @@ public class OverallConnection implements Serializable {
     private Car car;
 
     public OverallConnection() {
+    }
+
+    public OverallConnection(Date eventDate, String unitId, Boolean connected, Car car) {
+        this.overallConnectionsPK = new OverallConnectionPK(eventDate, unitId);
+        this.connected = connected;
+        this.car = car;
     }
 
     public OverallConnection(OverallConnectionPK overallConnectionsPK) {

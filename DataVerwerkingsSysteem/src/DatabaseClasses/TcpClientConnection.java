@@ -35,7 +35,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class TcpClientConnection implements Serializable {
     private static final long serialVersionUID = 1L;
     @EmbeddedId
-    protected TcpClientConnectionPK tcpClientConnectionsPK;
+    protected ConnectionsPK tcpClientConnectionsPK;
     @Column(name = "round_trip_latency")
     private BigInteger roundTripLatency;
     @Column(name = "outstanding_sends")
@@ -47,19 +47,26 @@ public class TcpClientConnection implements Serializable {
     public TcpClientConnection() {
     }
 
-    public TcpClientConnection(TcpClientConnectionPK tcpClientConnectionsPK) {
+    public TcpClientConnection(ConnectionsPK tcpClientConnectionsPK) {
         this.tcpClientConnectionsPK = tcpClientConnectionsPK;
     }
 
     public TcpClientConnection(String unitId, Date beginTime, Date endTime) {
-        this.tcpClientConnectionsPK = new TcpClientConnectionPK(unitId, beginTime, endTime);
+        this.tcpClientConnectionsPK = new ConnectionsPK(unitId, beginTime, endTime);
     }
 
-    public TcpClientConnectionPK getTcpClientConnectionsPK() {
+    public TcpClientConnection(String unitId, Date beginTime, Date endTime, BigInteger roundTripLatency, Integer outstandingSends, Car car) {
+        this.tcpClientConnectionsPK = new ConnectionsPK(unitId, beginTime, endTime);
+        this.roundTripLatency = roundTripLatency;
+        this.outstandingSends = outstandingSends;
+        this.car = car;
+    }
+
+    public ConnectionsPK getTcpClientConnectionsPK() {
         return tcpClientConnectionsPK;
     }
 
-    public void setTcpClientConnectionsPK(TcpClientConnectionPK tcpClientConnectionsPK) {
+    public void setTcpClientConnectionsPK(ConnectionsPK tcpClientConnectionsPK) {
         this.tcpClientConnectionsPK = tcpClientConnectionsPK;
     }
 

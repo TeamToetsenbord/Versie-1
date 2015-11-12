@@ -11,7 +11,7 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
 /**
- *
+ * Primary key class
  * @author School
  */
 @Embeddable

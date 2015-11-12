@@ -19,7 +19,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
- *
+ * Entity class for the company database table.
+ * Not used for CSV files.
+ * Can be created by users with certain rights.
  * @author School
  */
 @Entity
@@ -40,6 +42,12 @@ public class Company implements Serializable {
     private Collection<User> usersCollection;
 
     public Company() {
+    }
+
+    public Company(Integer companyId, String name, Collection<User> usersCollection) {
+        this.companyId = companyId;
+        this.name = name;
+        this.usersCollection = usersCollection;
     }
 
     public Company(Integer companyId) {

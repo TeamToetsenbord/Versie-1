@@ -34,6 +34,13 @@ public class Password implements Serializable {
     @Basic(optional = false)
     @Column(name = "user_name")
     private String userName;
+
+    public Password(String userName, String password, User users) {
+        this.userName = userName;
+        this.password = password;
+        this.users = users;
+    }
+    
     @Basic(optional = false)
     private String password;
     @JoinColumn(name = "user_name", referencedColumnName = "user_name", insertable = false, updatable = false)

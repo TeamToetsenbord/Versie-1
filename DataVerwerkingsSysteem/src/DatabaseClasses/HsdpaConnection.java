@@ -38,7 +38,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class HsdpaConnection implements Serializable {
     private static final long serialVersionUID = 1L;
     @EmbeddedId
-    protected HsdpaConnectionPK hsdpaConnectionsPK;
+    protected ConnectionsPK hsdpaConnectionsPK;
     private BigInteger squal = new BigInteger("0");
     private BigInteger rssi = new BigInteger("0");
     private BigInteger rscp = new BigInteger("0");
@@ -52,19 +52,24 @@ public class HsdpaConnection implements Serializable {
     public HsdpaConnection() {
     }
 
-    public HsdpaConnection(HsdpaConnectionPK hsdpaConnectionsPK) {
+    public HsdpaConnection(String unitId, Date beginTime, Date endTime, Car cars) {
+        this.hsdpaConnectionsPK = new ConnectionsPK(unitId, beginTime, endTime);
+        this.cars = cars;
+    }
+
+    public HsdpaConnection(ConnectionsPK hsdpaConnectionsPK) {
         this.hsdpaConnectionsPK = hsdpaConnectionsPK;
     }
 
     public HsdpaConnection(String unitId, Date beginTime, Date endTime) {
-        this.hsdpaConnectionsPK = new HsdpaConnectionPK(unitId, beginTime, endTime);
+        this.hsdpaConnectionsPK = new ConnectionsPK(unitId, beginTime, endTime);
     }
 
-    public HsdpaConnectionPK getHsdpaConnectionsPK() {
+    public ConnectionsPK getHsdpaConnectionsPK() {
         return hsdpaConnectionsPK;
     }
 
-    public void setHsdpaConnectionsPK(HsdpaConnectionPK hsdpaConnectionsPK) {
+    public void setHsdpaConnectionsPK(ConnectionsPK hsdpaConnectionsPK) {
         this.hsdpaConnectionsPK = hsdpaConnectionsPK;
     }
 

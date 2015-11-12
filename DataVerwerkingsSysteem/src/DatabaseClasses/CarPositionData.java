@@ -5,6 +5,7 @@
  */
 package DatabaseClasses;
 
+import static DatabaseClasses.CarPositionData_.carPositionDataPK;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Date;
@@ -18,7 +19,9 @@ import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- *
+ *  Enitity for the car_position_data int the database.
+ *  Used by the Positions CSV file.
+ *  TODO: calculate longitude and latitude from rdx and rdy.
  * @author School
  */
 @Entity
@@ -54,6 +57,12 @@ public class CarPositionData implements Serializable {
 
     public CarPositionData(CarPositionDataPK carPositionDataPK) {
         this.carPositionDataPK = carPositionDataPK;
+    }
+
+    public CarPositionData(String unitId, Date eventDate, Car car, ConnectionType connectionTypeId) {
+        this.carPositionDataPK = new CarPositionDataPK(unitId, eventDate);
+        this.car = car;
+        this.connectionTypeId = connectionTypeId;
     }
 
     public CarPositionData(String unitId, Date eventDate) {

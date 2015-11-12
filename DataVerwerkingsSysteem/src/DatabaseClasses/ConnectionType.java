@@ -19,8 +19,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
- *
- * @author School
+ * Entitiy class for the connections table in the database.
+ * It should not be used by the user!
+ * @author Elize
  */
 @Entity
 @Table(name = "connection_types", catalog = "CityGis Data", schema = "public")
@@ -41,6 +42,12 @@ public class ConnectionType implements Serializable {
     private Collection<CarPositionData> carPositionDataCollection;
 
     public ConnectionType() {
+    }
+
+    public ConnectionType(Integer connectionTypeId, String connectionName, Collection<CarPositionData> carPositionDataCollection) {
+        this.connectionTypeId = connectionTypeId;
+        this.connectionName = connectionName;
+        this.carPositionDataCollection = carPositionDataCollection;
     }
 
     public ConnectionType(Integer connectionTypeId) {
