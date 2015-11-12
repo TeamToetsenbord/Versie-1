@@ -5,10 +5,10 @@
  */
 package DatabaseClasses;
 
-import static DatabaseClasses.CarPositionData_.carPositionDataPK;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Date;
+import javax.persistence.CascadeType;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -19,13 +19,11 @@ import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- *  Enitity for the car_position_data int the database.
- *  Used by the Positions CSV file.
- *  TODO: calculate longitude and latitude from rdx and rdy.
+ *
  * @author School
  */
 @Entity
-@Table(name = "car_position_data", catalog = "CityGis Data", schema = "public")
+@Table(name = "car_position_data")
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "CarPositionData.findAll", query = "SELECT c FROM CarPositionData c"),
@@ -36,17 +34,18 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "CarPositionData.findBySpeed", query = "SELECT c FROM CarPositionData c WHERE c.speed = :speed"),
     @NamedQuery(name = "CarPositionData.findByCourse", query = "SELECT c FROM CarPositionData c WHERE c.course = :course"),
     @NamedQuery(name = "CarPositionData.findByHdop", query = "SELECT c FROM CarPositionData c WHERE c.hdop = :hdop")})
+
 public class CarPositionData implements Serializable {
     private static final long serialVersionUID = 1L;
     @EmbeddedId
     protected CarPositionDataPK carPositionDataPK;
-    private BigInteger latitude = new BigInteger("0");
-    private BigInteger longitude = new BigInteger("0");
-    private Integer speed = 0;
-    private Integer course = 0;
-    private Integer hdop = 0;
+    private BigInteger latitude;
+    private BigInteger longitude;
+    private Integer speed;
+    private Integer course;
+    private Integer hdop;
     @JoinColumn(name = "unit_id", referencedColumnName = "unit_id", insertable = false, updatable = false)
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, cascade = CascadeType.ALL)
     private Car car;
     @JoinColumn(name = "connection_type_id", referencedColumnName = "connection_type_id")
     @ManyToOne
@@ -59,9 +58,25 @@ public class CarPositionData implements Serializable {
         this.carPositionDataPK = carPositionDataPK;
     }
 
-    public CarPositionData(String unitId, Date eventDate, Car car, ConnectionType connectionTypeId) {
+    /**
+     * Constructor for the CSV reader
+     * @param unitId
+     * @param eventDate
+     * @param latitude
+     * @param longitude
+     * @param speed
+     * @param course
+     * @param hdop
+     * @param connectionTypeId 
+     */
+    public CarPositionData(String unitId, Date eventDate, BigInteger latitude, BigInteger longitude, Integer speed, Integer course, Integer hdop, ConnectionType connectionTypeId) {
         this.carPositionDataPK = new CarPositionDataPK(unitId, eventDate);
-        this.car = car;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.speed = speed;
+        this.course = course;
+        this.hdop = hdop;
+        this.car = new Car(unitId);
         this.connectionTypeId = connectionTypeId;
     }
 
@@ -117,12 +132,12 @@ public class CarPositionData implements Serializable {
         this.hdop = hdop;
     }
 
-    public Car getCars() {
+    public Car getCar() {
         return car;
     }
 
-    public void setCars(Car cars) {
-        this.car= cars;
+    public void setCar(Car car) {
+        this.car = car;
     }
 
     public ConnectionType getConnectionTypeId() {
