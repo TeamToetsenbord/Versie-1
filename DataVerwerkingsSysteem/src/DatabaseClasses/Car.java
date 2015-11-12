@@ -20,7 +20,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
- *
+ * Entity class for the cars in the database.
+ * Used for the Connections, Monitoring, Events and Positions CSV files
  * @author School
  */
 @Entity
@@ -36,11 +37,9 @@ public class Car implements Serializable {
     @Column(name = "unit_id")
     private String unitId;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "car")
-    private Collection<CarStatusEvents> carStatusEventsCollection;
+    private Collection<CarStatusEvent> carStatusEventsCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "cars")
     private Collection<HsdpaConnection> hsdpaConnectionsCollection;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "car")
-    private Collection<GpsPositionData> gpsPositionDataCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "car")
     private Collection<OverallConnection> overallConnectionsCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "cars")
@@ -64,11 +63,11 @@ public class Car implements Serializable {
     }
 
     @XmlTransient
-    public Collection<CarStatusEvents> getCarStatusEventsCollection() {
+    public Collection<CarStatusEvent> getCarStatusEventsCollection() {
         return carStatusEventsCollection;
     }
 
-    public void setCarStatusEventsCollection(Collection<CarStatusEvents> carStatusEventsCollection) {
+    public void setCarStatusEventsCollection(Collection<CarStatusEvent> carStatusEventsCollection) {
         this.carStatusEventsCollection = carStatusEventsCollection;
     }
 
@@ -81,14 +80,6 @@ public class Car implements Serializable {
         this.hsdpaConnectionsCollection = hsdpaConnectionsCollection;
     }
 
-    @XmlTransient
-    public Collection<GpsPositionData> getGpsPositionDataCollection() {
-        return gpsPositionDataCollection;
-    }
-
-    public void setGpsPositionDataCollection(Collection<GpsPositionData> gpsPositionDataCollection) {
-        this.gpsPositionDataCollection = gpsPositionDataCollection;
-    }
 
     @XmlTransient
     public Collection<OverallConnection> getOverallConnectionsCollection() {
