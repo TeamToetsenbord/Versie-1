@@ -7,6 +7,7 @@ package DatabaseClasses;
 
 import java.io.Serializable;
 import java.util.Date;
+import javax.persistence.CascadeType;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -17,23 +18,21 @@ import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Entity class for the overall_connections table.
- * Used by the connections CSV.
+ *
  * @author School
  */
 @Entity
-@Table(name = "overall_connections", catalog = "CityGis Data", schema = "public")
+@Table(name = "overall_connections")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "OverallConnections.findAll", query = "SELECT o FROM OverallConnections o"),
-    @NamedQuery(name = "OverallConnections.findByEventDate", query = "SELECT o FROM OverallConnections o WHERE o.overallConnectionsPK.eventDate = :eventDate"),
-    @NamedQuery(name = "OverallConnections.findByUnitId", query = "SELECT o FROM OverallConnections o WHERE o.overallConnectionsPK.unitId = :unitId"),
-    @NamedQuery(name = "OverallConnections.findByConnected", query = "SELECT o FROM OverallConnections o WHERE o.connected = :connected")})
-public class OverallConnection implements Serializable {
+    @NamedQuery(name = "OverallConnection.findAll", query = "SELECT o FROM OverallConnection o"),
+    @NamedQuery(name = "OverallConnection.findByEventDate", query = "SELECT o FROM OverallConnection o WHERE o.overallConnectionPK.eventDate = :eventDate"),
+    @NamedQuery(name = "OverallConnection.findByUnitId", query = "SELECT o FROM OverallConnection o WHERE o.overallConnectionPK.unitId = :unitId"),
+    @NamedQuery(name = "OverallConnection.findByConnected", query = "SELECT o FROM OverallConnection o WHERE o.overallConnectionPK.connected = :connected")})
+public class OverallConnection implements Serializable{
     private static final long serialVersionUID = 1L;
     @EmbeddedId
-    protected OverallConnectionPK overallConnectionsPK;
-    private Boolean connected;
+    protected OverallConnectionPK overallConnectionPK;
     @JoinColumn(name = "unit_id", referencedColumnName = "unit_id", insertable = false, updatable = false)
     @ManyToOne(optional = false)
     private Car car;
@@ -41,48 +40,41 @@ public class OverallConnection implements Serializable {
     public OverallConnection() {
     }
 
-    public OverallConnection(Date eventDate, String unitId, Boolean connected, Car car) {
-        this.overallConnectionsPK = new OverallConnectionPK(eventDate, unitId);
-        this.connected = connected;
-        this.car = car;
+    public OverallConnection(OverallConnectionPK overallConnectionPK) {
+        this.overallConnectionPK = overallConnectionPK;
     }
 
-    public OverallConnection(OverallConnectionPK overallConnectionsPK) {
-        this.overallConnectionsPK = overallConnectionsPK;
+    /**
+     * Constructor used by CSV file reader
+     * @param eventDate
+     * @param unitId
+     * @param connected 
+     */
+    public OverallConnection(Date eventDate, String unitId, boolean connected) {
+        this.overallConnectionPK = new OverallConnectionPK(eventDate, unitId, connected);
+        this.car = new Car(unitId);
     }
 
-    public OverallConnection(Date eventDate, String unitId) {
-        this.overallConnectionsPK = new OverallConnectionPK(eventDate, unitId);
+    public OverallConnectionPK getOverallConnectionPK() {
+        return overallConnectionPK;
     }
 
-    public OverallConnectionPK getOverallConnectionsPK() {
-        return overallConnectionsPK;
-    }
-
-    public void setOverallConnectionsPK(OverallConnectionPK overallConnectionsPK) {
-        this.overallConnectionsPK = overallConnectionsPK;
-    }
-
-    public Boolean getConnected() {
-        return connected;
-    }
-
-    public void setConnected(Boolean connected) {
-        this.connected = connected;
+    public void setOverallConnectionPK(OverallConnectionPK overallConnectionPK) {
+        this.overallConnectionPK = overallConnectionPK;
     }
 
     public Car getCar() {
         return car;
     }
 
-    public void setCar(Car cars) {
-        this.car = cars;
+    public void setCar(Car car) {
+        this.car = car;
     }
 
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (overallConnectionsPK != null ? overallConnectionsPK.hashCode() : 0);
+        hash += (overallConnectionPK != null ? overallConnectionPK.hashCode() : 0);
         return hash;
     }
 
@@ -93,7 +85,7 @@ public class OverallConnection implements Serializable {
             return false;
         }
         OverallConnection other = (OverallConnection) object;
-        if ((this.overallConnectionsPK == null && other.overallConnectionsPK != null) || (this.overallConnectionsPK != null && !this.overallConnectionsPK.equals(other.overallConnectionsPK))) {
+        if ((this.overallConnectionPK == null && other.overallConnectionPK != null) || (this.overallConnectionPK != null && !this.overallConnectionPK.equals(other.overallConnectionPK))) {
             return false;
         }
         return true;
@@ -101,7 +93,7 @@ public class OverallConnection implements Serializable {
 
     @Override
     public String toString() {
-        return "DatabaseClasses.OverallConnections[ overallConnectionsPK=" + overallConnectionsPK + " ]";
+        return "DatabaseClasses.OverallConnection[ overallConnectionPK=" + overallConnectionPK + " ]";
     }
     
 }
