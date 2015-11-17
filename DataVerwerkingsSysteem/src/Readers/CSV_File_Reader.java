@@ -5,12 +5,16 @@
  */
 package Readers;
 
+import DatabaseClasses.CarPositionData;
 import DatabaseClasses.CarStatusEvent;
 import DatabaseClasses.Database_Manager;
+import DatabaseClasses.EntityClass;
 import DatabaseClasses.HsdpaConnection;
 import DatabaseClasses.OverallConnection;
+import DatabaseClasses.TcpClientConnection;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -159,16 +163,26 @@ public class CSV_File_Reader {
         BufferedReader br = null;
         String line = "";
         String cvsSplitBy = ";"; //splits file for every ;
+        
         try{
             br = new BufferedReader(new FileReader(path));
             br.readLine();
             while ((line = br.readLine()) != null){
                 String [] lines = line.split(cvsSplitBy);
-                String date = lines[0];
-                String unitid = lines[1];
-                String port = lines [2];
-                String value = lines [3];
-                System.out.println("info:   "+ date +"   " + unitid +"    "+ port +"    "+ value);
+                //DateTime;UnitId;Rdx;Rdy;Speed;Course;NumSatellites;HDOP;Quality
+
+                String dateString = lines[0];
+                Date dateformatted = getDateByString(dateString);
+                String unitId = lines[1];
+                String rdx = lines[2];
+                String rdy = lines[3];
+                String speed = lines[4];
+                String course = lines[5];
+                String numSatellites = lines[6];
+                String hdop = lines[7];
+                String quality = lines[8];
+                
+                //System.out.println("info:   "+ date +"   " + unitid +"    "+ port +"    "+ value);
                                 //TODO Add information to database!
 
             }
@@ -191,27 +205,50 @@ public class CSV_File_Reader {
         
         
     private static void getMonitoringObjectFound(String[] lines) {
-         
-        //UnitId;BeginTime;EndTime;Type;Min;Max;Sum
-
-                
+                        
                 String unitId = lines[0];
                 String beginTimeString = lines[1];
                 String endTimeString = lines[2];
                 String type = lines[3];
                 String sum = lines[6];
+                int average = calculateAverageByTicks(Integer.parseInt(sum));
                 
                 Date beginTime = getDateByString(beginTimeString); 
                 Date endTime = getDateByString(endTimeString); 
                 
-                if(type.contains("Hsdpa")){
-                HsdpaConnection hsdpaConnection = new HsdpaConnection(unitId, beginTime, endTime);
-                }else if(type.contains("TcpClient")){
-                
-                }else if(type.contains("Gps")){
+                EntityClass object = null;
+                if(type.toLowerCase().startsWith("hsdpa")){
+                    HsdpaConnection hc  = new HsdpaConnection(unitId, beginTime, endTime);
                     
+                    if(type.toLowerCase().endsWith("squal")){
+                        hc.setSqual(BigInteger.valueOf(average));
+                    }else if(type.toLowerCase().endsWith("rscp")){
+                        hc.setRscp(BigInteger.valueOf(average));
+                    }else if(type.toLowerCase().endsWith("srxlev")){
+                        hc.setSrxlev(BigInteger.valueOf(average));
+                    }else if(type.toLowerCase().endsWith("rssi")){
+                        hc.setRssi(BigInteger.valueOf(average));
+                    }else if(type.toLowerCase().endsWith("numberofconnects")){
+                         hc.setNumberOfConnections(average);
+
+                    }
+                                 
+                    object = hc;
+                                        
+                }else if(type.toLowerCase().startsWith("tcpClient")){
+                    TcpClientConnection tcc = new TcpClientConnection(unitId, beginTime, endTime);
+                    
+                        if(type.toLowerCase().endsWith("roundtriplatency")){
+                            tcc.setRoundTripLatency(BigInteger.valueOf(average));
+                        }else if(type.toLowerCase().endsWith("outstandingsends")){
+                             tcc.setOutstandingSends(average);
+                        }
                 }
-                //TODO get other information!
+                
+                if(object != null){
+                    Database_Manager.addObjectToPersistList(object);
+                }
+                
     }
     
     private static Date getDateByString(String string){
@@ -232,7 +269,7 @@ public class CSV_File_Reader {
      * @param sum
      * @return the average
      */
-    private int calculateAverageByTicks(int sum){
+    private static int calculateAverageByTicks(int sum){
         return sum / TICKS_PER_SECOND;
     }
 }
