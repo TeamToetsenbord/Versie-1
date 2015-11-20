@@ -7,7 +7,6 @@ package Readers;
 
 import DatabaseClasses.CarPositionData;
 import DatabaseClasses.Database_Manager;
-import static Readers.CSV_File_Reader.getDateByString;
 import static Readers.CSV_File_Reader.reading;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -26,6 +25,7 @@ public class PositionsCSVReaderThread extends CSV_File_Reader{
 
     @Override
     public void run() {
+        
         readAndInsertPositionsCSV();
     }
     
@@ -57,7 +57,7 @@ public class PositionsCSVReaderThread extends CSV_File_Reader{
             while ((line = br.readLine()) != null){
                 String [] lines = line.split(cvsSplitBy);
                 String dateString = lines[0];
-                Date dateFormatted = getDateByString(dateString);
+                Date dateFormatted = CSV_File_Reader.getDateByString(dateString);
                 String unitId = lines[1];
                 String rdx = lines[2];
                 String rdy = lines[3];
