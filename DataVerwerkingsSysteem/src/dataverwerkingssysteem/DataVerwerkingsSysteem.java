@@ -5,9 +5,12 @@
  */
 package dataverwerkingssysteem;
 
+import DatabaseClasses.Database_Manager;
+import Readers.PositionsCSVReaderThread;
+
 /**
  *
- * @author School
+ * @author Elize
  */
 public class DataVerwerkingsSysteem {
 
@@ -16,6 +19,12 @@ public class DataVerwerkingsSysteem {
      */
     public static void main(String[] args) {
         // TODO code application logic here
+        Database_Manager dbManager = new Database_Manager();
+        dbManager.start();
+        
+        PositionsCSVReaderThread reader = new PositionsCSVReaderThread();
+        reader.start();
+        
     }
     
 }

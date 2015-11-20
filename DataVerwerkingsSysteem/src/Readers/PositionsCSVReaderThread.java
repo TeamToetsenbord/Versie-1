@@ -25,7 +25,6 @@ public class PositionsCSVReaderThread extends CSVFileReader{
 
     @Override
     public void run() {
-        
         readAndInsertPositionsCSV();
     }
     
@@ -85,8 +84,7 @@ public class PositionsCSVReaderThread extends CSVFileReader{
                         connectionType, latitude, longitude, Integer.parseInt(speed), Integer.parseInt(course), Integer.parseInt(hdop) );
                 Database_Manager.addObjectToPersistList(cpd);
             }
-        }
-        catch (Exception ex){   
+        }catch (Exception ex){   
             System.out.println(ex);
             }
          finally{

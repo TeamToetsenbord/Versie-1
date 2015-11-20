@@ -28,65 +28,64 @@ import javax.swing.JOptionPane;
 public class Database_Manager extends Thread {
     
     private static ArrayList<EntityClass> objectsToPersist = new ArrayList();
+    private static final int OBJECTSPERTRANSACTION = 100;
         
     private static EntityManagerFactory entityManagerFactory
               = Persistence.createEntityManagerFactory("DataVerwerkingsSysteemPU");
+    private EntityManager entityManager = null;
+    private int count = 0;
     
     
-    public static Object find(Class classToFind, Object objectToFind){
-    
-        Object foundObject = null;
-        try{
-        EntityManager em = entityManagerFactory.createEntityManager();
-        em.getTransaction().begin();
-        foundObject = em.find(classToFind, objectToFind);
-        em.getTransaction().commit();
-        em.clear();
-        em.close();
-        }catch(Exception ex){
-            ex.printStackTrace();
-        }finally{
-            return foundObject;
-        }
-            
-    }
+
        
     @Override
     public void run() {
         while(true){
             if(!objectsToPersist.isEmpty()){
-               
-               persistOrUpdateObject(objectsToPersist.get(0));
-           
-               System.out.println(objectsToPersist.size());
+               EntityClass objectToPersist = objectsToPersist.get(0);
+               if(objectToPersist != null){
+               persistOrUpdateObject(objectToPersist);
+               }
             }else{
                 if(CSVFileReader.reading == false && objectsToPersist.size() == 0){
                 System.out.println("Finished");
                 }
             }
         }
+        
     }
     
     protected void persistOrUpdateObject(EntityClass object){
     
         try{
-            EntityManager entityManager = entityManagerFactory.createEntityManager();
+            int currentSize = objectsToPersist.size();
+            if(count > 0){
+            entityManager.joinTransaction();
+            }else if(count == 0 || currentSize < OBJECTSPERTRANSACTION){
+            entityManager = entityManagerFactory.createEntityManager();
             entityManager.getTransaction().begin();
+            
+            }
+            
             
             EntityClass objectInDatabaseFound = 
                     entityManager.find(object.getClass(),  object.getPK());
-            if(objectInDatabaseFound != null && !objectInDatabaseFound.equals(object)){
+            if(objectInDatabaseFound == null){
+                persist(object, entityManager);
+            }else if(objectInDatabaseFound != null && !objectInDatabaseFound.equals(object)){
+                
                 update(object, entityManager, objectInDatabaseFound);
-            }else{
-               persist(object, entityManager);
             }
             
+            count--;  
+            if(count == 0 || currentSize == OBJECTSPERTRANSACTION){
             entityManager.getTransaction().commit();
-            
             entityManager.clear();
             entityManager.close();
+            count = OBJECTSPERTRANSACTION;
+            }
             
-          
+         
         }catch(PersistenceException ex){
             System.out.println(ex);
         
@@ -157,4 +156,16 @@ public class Database_Manager extends Thread {
             System.out.println(ex);
         }
     }
+    
+    
+    public static void closeConnection() {
+        
+        if(entityManagerFactory.isOpen()){
+            entityManagerFactory.close();
+        }
+    } 
+
+   
+    
+        
 }
