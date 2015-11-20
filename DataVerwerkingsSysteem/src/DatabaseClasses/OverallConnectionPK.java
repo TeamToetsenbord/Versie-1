@@ -21,18 +21,22 @@ import javax.persistence.TemporalType;
 public class OverallConnectionPK implements Serializable {
     @Basic(optional = false)
     @Column(name = "event_date")
-    @Temporal(TemporalType.DATE)
-    private Date eventDate;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date eventDate = null;
     @Basic(optional = false)
     @Column(name = "unit_id")
-    private String unitId;
+    private String unitId = null;
+    @Basic(optional = false)
+    @Column(name = "connected")
+    private boolean connected;
 
     public OverallConnectionPK() {
     }
 
-    public OverallConnectionPK(Date eventDate, String unitId) {
+    public OverallConnectionPK(Date eventDate, String unitId, boolean connected) {
         this.eventDate = eventDate;
         this.unitId = unitId;
+        this.connected = connected;
     }
 
     public Date getEventDate() {
@@ -51,11 +55,20 @@ public class OverallConnectionPK implements Serializable {
         this.unitId = unitId;
     }
 
+    public boolean getConnected() {
+        return connected;
+    }
+
+    public void setConnected(boolean connected) {
+        this.connected = connected;
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;
         hash += (eventDate != null ? eventDate.hashCode() : 0);
         hash += (unitId != null ? unitId.hashCode() : 0);
+        hash += (connected ? 1 : 0);
         return hash;
     }
 
@@ -72,12 +85,17 @@ public class OverallConnectionPK implements Serializable {
         if ((this.unitId == null && other.unitId != null) || (this.unitId != null && !this.unitId.equals(other.unitId))) {
             return false;
         }
+        if (this.connected != other.connected) {
+            return false;
+        }
         return true;
     }
 
     @Override
     public String toString() {
-        return "DatabaseClasses.OverallConnectionsPK[ eventDate=" + eventDate + ", unitId=" + unitId + " ]";
+        return "DatabaseClasses.OverallConnectionPK[ eventDate=" + eventDate + ", unitId=" + unitId + ", connected=" + connected + " ]";
     }
+    
+  
     
 }

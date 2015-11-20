@@ -8,6 +8,7 @@ package DatabaseClasses;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Date;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
@@ -20,57 +21,79 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author School
+ * @author Elize
  */
 @Entity
-@Table(name = "hsdpa_connections", catalog = "CityGis Data", schema = "public")
+@Table(name = "hsdpa_connections")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "HsdpaConnections.findAll", query = "SELECT h FROM HsdpaConnections h"),
-    @NamedQuery(name = "HsdpaConnections.findByUnitId", query = "SELECT h FROM HsdpaConnections h WHERE h.hsdpaConnectionsPK.unitId = :unitId"),
-    @NamedQuery(name = "HsdpaConnections.findByBeginTime", query = "SELECT h FROM HsdpaConnections h WHERE h.hsdpaConnectionsPK.beginTime = :beginTime"),
-    @NamedQuery(name = "HsdpaConnections.findByEndTime", query = "SELECT h FROM HsdpaConnections h WHERE h.hsdpaConnectionsPK.endTime = :endTime"),
-    @NamedQuery(name = "HsdpaConnections.findBySqual", query = "SELECT h FROM HsdpaConnections h WHERE h.squal = :squal"),
-    @NamedQuery(name = "HsdpaConnections.findByRssi", query = "SELECT h FROM HsdpaConnections h WHERE h.rssi = :rssi"),
-    @NamedQuery(name = "HsdpaConnections.findByRscp", query = "SELECT h FROM HsdpaConnections h WHERE h.rscp = :rscp"),
-    @NamedQuery(name = "HsdpaConnections.findBySrxlev", query = "SELECT h FROM HsdpaConnections h WHERE h.srxlev = :srxlev"),
-    @NamedQuery(name = "HsdpaConnections.findByNumberOfConnections", query = "SELECT h FROM HsdpaConnections h WHERE h.numberOfConnections = :numberOfConnections")})
-public class HsdpaConnection implements Serializable {
+    @NamedQuery(name = "HsdpaConnection.findAll", query = "SELECT h FROM HsdpaConnection h"),
+    @NamedQuery(name = "HsdpaConnection.findByUnitId", query = "SELECT h FROM HsdpaConnection h WHERE h.hsdpaConnectionPK.unitId = :unitId"),
+    @NamedQuery(name = "HsdpaConnection.findBySqual", query = "SELECT h FROM HsdpaConnection h WHERE h.squal = :squal"),
+    @NamedQuery(name = "HsdpaConnection.findByRssi", query = "SELECT h FROM HsdpaConnection h WHERE h.rssi = :rssi"),
+    @NamedQuery(name = "HsdpaConnection.findByRscp", query = "SELECT h FROM HsdpaConnection h WHERE h.rscp = :rscp"),
+    @NamedQuery(name = "HsdpaConnection.findBySrxlev", query = "SELECT h FROM HsdpaConnection h WHERE h.srxlev = :srxlev"),
+    @NamedQuery(name = "HsdpaConnection.findByNumberOfConnections", query = "SELECT h FROM HsdpaConnection h WHERE h.numberOfConnections = :numberOfConnections")})
+public class HsdpaConnection implements Serializable, EntityClass{
+    @Column(name = "squal")
+    private BigInteger squal = null;
+    @Column(name = "rssi")
+    private BigInteger rssi = null;
+    @Column(name = "rscp")
+    private BigInteger rscp = null;
+    @Column(name = "srxlev")
+    private BigInteger srxlev = null;
     private static final long serialVersionUID = 1L;
     @EmbeddedId
-    protected ConnectionsPK hsdpaConnectionsPK;
-    private BigInteger squal = new BigInteger("0");
-    private BigInteger rssi = new BigInteger("0");
-    private BigInteger rscp = new BigInteger("0");
-    private BigInteger srxlev = new BigInteger("0");
+    protected HsdpaConnectionPK hsdpaConnectionPK = null;
     @Column(name = "number_of_connections")
-    private Integer numberOfConnections = 0;
+    private Integer numberOfConnections = null;
     @JoinColumn(name = "unit_id", referencedColumnName = "unit_id", insertable = false, updatable = false)
     @ManyToOne(optional = false)
-    private Car cars;
+    private Car car = null;
 
     public HsdpaConnection() {
     }
 
-    public HsdpaConnection(String unitId, Date beginTime, Date endTime, Car cars) {
-        this.hsdpaConnectionsPK = new ConnectionsPK(unitId, beginTime, endTime);
-        this.cars = cars;
+    public HsdpaConnection(HsdpaConnectionPK hsdpaConnectionPK) {
+        this.hsdpaConnectionPK = hsdpaConnectionPK;
+        this.car = new Car(this.hsdpaConnectionPK.getUnitId());
     }
 
-    public HsdpaConnection(ConnectionsPK hsdpaConnectionsPK) {
-        this.hsdpaConnectionsPK = hsdpaConnectionsPK;
+    public HsdpaConnection(String unitId, Date date) {
+        this.hsdpaConnectionPK = new HsdpaConnectionPK(unitId, date);
+        this.car = new Car(unitId);
     }
 
-    public HsdpaConnection(String unitId, Date beginTime, Date endTime) {
-        this.hsdpaConnectionsPK = new ConnectionsPK(unitId, beginTime, endTime);
+    /**
+     * Constructor for the csv file reader
+     * @param unitId
+     * @param beginTime
+     * @param endTime
+     * @param squal
+     * @param rssi
+     * @param rscp
+     * @param srxlev
+     * @param numberOfConnections
+     * @param car 
+     */
+    public HsdpaConnection(String unitId, Date date, BigInteger squal, BigInteger rssi, BigInteger rscp, BigInteger srxlev, Integer numberOfConnections) {
+        this.squal = squal;
+        this.rssi = rssi;
+        this.rscp = rscp;
+        this.srxlev = srxlev;
+        this.hsdpaConnectionPK = new HsdpaConnectionPK(unitId, date);
+        this.numberOfConnections = numberOfConnections;
+        
+        this.car = new Car(unitId);
     }
 
-    public ConnectionsPK getHsdpaConnectionsPK() {
-        return hsdpaConnectionsPK;
+    public HsdpaConnectionPK getHsdpaConnectionPK() {
+        return hsdpaConnectionPK;
     }
 
-    public void setHsdpaConnectionsPK(ConnectionsPK hsdpaConnectionsPK) {
-        this.hsdpaConnectionsPK = hsdpaConnectionsPK;
+    public void setHsdpaConnectionPK(HsdpaConnectionPK hsdpaConnectionPK) {
+        this.hsdpaConnectionPK = hsdpaConnectionPK;
     }
 
     public BigInteger getSqual() {
@@ -113,18 +136,18 @@ public class HsdpaConnection implements Serializable {
         this.numberOfConnections = numberOfConnections;
     }
 
-    public Car getCars() {
-        return cars;
+    public Car getCar() {
+        return car;
     }
 
-    public void setCars(Car cars) {
-        this.cars = cars;
+    public void setCar(Car car) {
+        this.car = car;
     }
 
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (hsdpaConnectionsPK != null ? hsdpaConnectionsPK.hashCode() : 0);
+        hash += (hsdpaConnectionPK != null ? hsdpaConnectionPK.hashCode() : 0);
         return hash;
     }
 
@@ -135,7 +158,7 @@ public class HsdpaConnection implements Serializable {
             return false;
         }
         HsdpaConnection other = (HsdpaConnection) object;
-        if ((this.hsdpaConnectionsPK == null && other.hsdpaConnectionsPK != null) || (this.hsdpaConnectionsPK != null && !this.hsdpaConnectionsPK.equals(other.hsdpaConnectionsPK))) {
+        if ((this.hsdpaConnectionPK == null && other.hsdpaConnectionPK != null) || (this.hsdpaConnectionPK != null && !this.hsdpaConnectionPK.equals(other.hsdpaConnectionPK))) {
             return false;
         }
         return true;
@@ -143,7 +166,65 @@ public class HsdpaConnection implements Serializable {
 
     @Override
     public String toString() {
-        return "DatabaseClasses.HsdpaConnections[ hsdpaConnectionsPK=" + hsdpaConnectionsPK + " ]";
+        return "DatabaseClasses.HsdpaConnection[ hsdpaConnectionPK=" + hsdpaConnectionPK + " ]";
     }
+
+    @Override
+    public Object getPK() {
+        return this.getHsdpaConnectionPK();
+    }
+
+    @Override
+    public EntityClass mergeWithObjectFromDatabase(EntityClass ec) {
+        
+        HsdpaConnection dbHC = (HsdpaConnection) ec;
+                
+        if(this.hsdpaConnectionPK != null){
+            if (dbHC.hsdpaConnectionPK == null || 
+                    !this.hsdpaConnectionPK.equals(dbHC.hsdpaConnectionPK)) {
+                dbHC.hsdpaConnectionPK = this.hsdpaConnectionPK;
+            }
+        }
+        if(this.squal != null){
+            if (dbHC.squal == null || this.squal.intValue() != dbHC.squal.intValue()) {
+                dbHC.squal = this.squal;
+            }
+        }
+               
+        if(this.rssi != null){
+            if (dbHC.rssi == null || this.rssi.compareTo(dbHC.rssi) != 0) {
+                dbHC.rssi = this.rssi;
+            }                   
+        }
+        
+        if(this.rscp != null){
+            if (dbHC.rscp == null || this.rscp.compareTo(dbHC.rscp) != 0) {
+                dbHC.rscp = this.rscp;
+            }
+        }
+        
+        if(this.srxlev != null ){
+            if (dbHC.srxlev == null || this.srxlev.compareTo(dbHC.srxlev) != 0) {
+                dbHC.srxlev = this.srxlev;
+            }
+        }
+        
+        if(this.numberOfConnections != null){
+            if (dbHC.numberOfConnections == null || 
+                    this.numberOfConnections.compareTo(dbHC.numberOfConnections.intValue()) != 0) {
+                dbHC.numberOfConnections = this.numberOfConnections;
+            }
+        }
+        if(this.car != null){
+            if (dbHC.car == null || !this.car.equals(dbHC.car)) {
+                dbHC.car = this.car;
+            }
+        }
+        
+        return dbHC;
+
+    }
+
+
     
 }

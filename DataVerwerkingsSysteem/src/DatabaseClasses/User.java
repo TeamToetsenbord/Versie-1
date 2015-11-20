@@ -21,52 +21,40 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author School
+ * @author Elize
  */
 @Entity
-@Table(catalog = "CityGis Data", schema = "public")
+@Table(name = "users")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Users.findAll", query = "SELECT u FROM Users u"),
-    @NamedQuery(name = "Users.findByUserName", query = "SELECT u FROM Users u WHERE u.userName = :userName"),
-    @NamedQuery(name = "Users.findByEmailAddress", query = "SELECT u FROM Users u WHERE u.emailAddress = :emailAddress"),
-    @NamedQuery(name = "Users.findByFirstName", query = "SELECT u FROM Users u WHERE u.firstName = :firstName"),
-    @NamedQuery(name = "Users.findByLastName", query = "SELECT u FROM Users u WHERE u.lastName = :lastName"),
-    @NamedQuery(name = "Users.findByPassword", query = "SELECT u FROM Users u WHERE u.password = :password")})
-public class User implements Serializable {
+    @NamedQuery(name = "User.findAll", query = "SELECT u FROM User u"),
+    @NamedQuery(name = "User.findByUserName", query = "SELECT u FROM User u WHERE u.userName = :userName"),
+    @NamedQuery(name = "User.findByEmailAddress", query = "SELECT u FROM User u WHERE u.emailAddress = :emailAddress"),
+    @NamedQuery(name = "User.findByFirstName", query = "SELECT u FROM User u WHERE u.firstName = :firstName"),
+    @NamedQuery(name = "User.findByLastName", query = "SELECT u FROM User u WHERE u.lastName = :lastName")})
+public class User implements Serializable, EntityClass {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
     @Column(name = "user_name")
-    private String userName;
+    private String userName = null;
     @Column(name = "email_address")
-    private String emailAddress;
+    private String emailAddress = null;
     @Column(name = "first_name")
-    private String firstName;
+    private String firstName = null;
     @Column(name = "last_name")
-    private String lastName;
-    private String password;
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "users")
-    private Password passwords;
+    private String lastName = null;
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "user")
+    private Password password = null;
     @JoinColumn(name = "company", referencedColumnName = "company_id")
     @ManyToOne
-    private Company company;
+    private Company company = null;
 
     public User() {
     }
 
     public User(String userName) {
         this.userName = userName;
-    }
-
-    public User(String userName, String emailAddress, String firstName, String lastName, String password, Password passwords, Company company) {
-        this.userName = userName;
-        this.emailAddress = emailAddress;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.password = password;
-        this.passwords = passwords;
-        this.company = company;
     }
 
     public String getUserName() {
@@ -101,20 +89,12 @@ public class User implements Serializable {
         this.lastName = lastName;
     }
 
-    public String getPassword() {
+    public Password getPassword() {
         return password;
     }
 
-    public void setPassword(String password) {
+    public void setPassword(Password password) {
         this.password = password;
-    }
-
-    public Password getPasswords() {
-        return passwords;
-    }
-
-    public void setPasswords(Password passwords) {
-        this.passwords = passwords;
     }
 
     public Company getCompany() {
@@ -147,7 +127,61 @@ public class User implements Serializable {
 
     @Override
     public String toString() {
-        return "DatabaseClasses.Users[ userName=" + userName + " ]";
+        return "DatabaseClasses.User[ userName=" + userName + " ]";
     }
     
+       @Override
+    public Object getPK() {
+        return this.getUserName();
+    }
+
+    @Override
+    public Car getCar() {
+        return null;
+    }
+
+    @Override
+    public EntityClass mergeWithObjectFromDatabase(EntityClass ec) {
+        
+        User dbUser = (User) ec;
+        
+        if(this.userName != null){
+            if (dbUser.userName == null || !this.userName.equals(dbUser.userName)) {
+                dbUser.userName = this.userName;
+            }
+        }
+        
+        if(this.emailAddress != null){
+            if (dbUser.emailAddress == null || !this.emailAddress.equals(dbUser.emailAddress)) {
+                dbUser.emailAddress = this.emailAddress;
+            }
+        }
+        
+        if(this.firstName !=  null){
+            if (dbUser.firstName == null || !this.firstName.equals(dbUser.firstName)) {
+                dbUser.firstName = this.firstName;
+            }
+        }
+
+        if(this.password !=  null ){
+            if (dbUser.password == null || !this.password.equals(dbUser.password)) {
+                dbUser.password = this.password;
+            }
+        }
+        
+        if(this.lastName !=  null){
+            if (dbUser.lastName == null || !this.lastName.equals(dbUser.lastName)) {
+                dbUser.lastName = this.lastName;
+            }
+        }
+                        
+        if(this.company != null){
+            if (dbUser.company == null || !this.company.equals(dbUser.company)) {
+                dbUser.company = this.company;
+            }
+        }
+
+        return dbUser;
+    }
+
 }

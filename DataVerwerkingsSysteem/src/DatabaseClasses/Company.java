@@ -19,35 +19,28 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
- * Entity class for the company database table.
- * Not used for CSV files.
- * Can be created by users with certain rights.
- * @author School
+ *
+ * @author Elize
  */
 @Entity
-@Table(catalog = "CityGis Data", schema = "public")
+@Table(name = "companies")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Companies.findAll", query = "SELECT c FROM Companies c"),
-    @NamedQuery(name = "Companies.findByCompanyId", query = "SELECT c FROM Companies c WHERE c.companyId = :companyId"),
-    @NamedQuery(name = "Companies.findByName", query = "SELECT c FROM Companies c WHERE c.name = :name")})
-public class Company implements Serializable {
+    @NamedQuery(name = "Company.findAll", query = "SELECT c FROM Company c"),
+    @NamedQuery(name = "Company.findByCompanyId", query = "SELECT c FROM Company c WHERE c.companyId = :companyId"),
+    @NamedQuery(name = "Company.findByName", query = "SELECT c FROM Company c WHERE c.name = :name")})
+public class Company implements Serializable, EntityClass {
+    @Column(name = "name")
+    private String name = null;
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
     @Column(name = "company_id")
-    private Integer companyId;
-    private String name;
+    private Integer companyId = null;
     @OneToMany(mappedBy = "company")
-    private Collection<User> usersCollection;
+    private Collection<User> userCollection = null;
 
     public Company() {
-    }
-
-    public Company(Integer companyId, String name, Collection<User> usersCollection) {
-        this.companyId = companyId;
-        this.name = name;
-        this.usersCollection = usersCollection;
     }
 
     public Company(Integer companyId) {
@@ -56,6 +49,11 @@ public class Company implements Serializable {
 
     public Integer getCompanyId() {
         return companyId;
+    }
+
+    public Company(String name, Integer companyId) {
+        this.name = name;
+        this.companyId = companyId;
     }
 
     public void setCompanyId(Integer companyId) {
@@ -71,12 +69,12 @@ public class Company implements Serializable {
     }
 
     @XmlTransient
-    public Collection<User> getUsersCollection() {
-        return usersCollection;
+    public Collection<User> getUserCollection() {
+        return userCollection;
     }
 
-    public void setUsersCollection(Collection<User> usersCollection) {
-        this.usersCollection = usersCollection;
+    public void setUserCollection(Collection<User> userCollection) {
+        this.userCollection = userCollection;
     }
 
     @Override
@@ -101,7 +99,52 @@ public class Company implements Serializable {
 
     @Override
     public String toString() {
-        return "DatabaseClasses.Companies[ companyId=" + companyId + " ]";
+        return "DatabaseClasses.Company[ companyId=" + companyId + " ]";
     }
+
+    @Override
+    public Object getPK() {
+        return this.getCompanyId();
+    }
+
+    @Override
+    public Car getCar() {
+        return null;
+    }
+
+    @Override
+    public EntityClass mergeWithObjectFromDatabase(EntityClass ec) {
+        
+        Company dbCompany = (Company) ec;
+        
+        if(this.name != null){
+            if (dbCompany.name == null || !this.name.equals(dbCompany.name)) {
+                dbCompany.setName(this.name);
+            }
+        }
+        
+        if(this.companyId != null){
+            if (dbCompany.companyId == null || !this.companyId.equals(dbCompany.companyId)) {
+                dbCompany.setCompanyId(this.companyId);
+            }
+        }
+        
+        if(this.userCollection != null){
+            if(dbCompany.userCollection == null){
+                dbCompany.userCollection = dbCompany.userCollection;
+            }else if (!this.userCollection.containsAll(dbCompany.userCollection)) {
+                for(User user: this.userCollection){
+                    if(!dbCompany.userCollection.contains(user)){
+                        dbCompany.userCollection.add(user);
+                    }
+                }
+            }
+        }
+        
+        return dbCompany;
+
+    }
+
+
     
 }

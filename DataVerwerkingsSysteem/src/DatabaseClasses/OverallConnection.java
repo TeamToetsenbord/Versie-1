@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author School
+ * @author Elize
  */
 @Entity
 @Table(name = "overall_connections")
@@ -29,13 +29,13 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "OverallConnection.findByEventDate", query = "SELECT o FROM OverallConnection o WHERE o.overallConnectionPK.eventDate = :eventDate"),
     @NamedQuery(name = "OverallConnection.findByUnitId", query = "SELECT o FROM OverallConnection o WHERE o.overallConnectionPK.unitId = :unitId"),
     @NamedQuery(name = "OverallConnection.findByConnected", query = "SELECT o FROM OverallConnection o WHERE o.overallConnectionPK.connected = :connected")})
-public class OverallConnection implements Serializable{
+public class OverallConnection implements Serializable, EntityClass{
     private static final long serialVersionUID = 1L;
     @EmbeddedId
-    protected OverallConnectionPK overallConnectionPK;
+    protected OverallConnectionPK overallConnectionPK = null;
     @JoinColumn(name = "unit_id", referencedColumnName = "unit_id", insertable = false, updatable = false)
     @ManyToOne(optional = false)
-    private Car car;
+    private Car car = null;
 
     public OverallConnection() {
     }
@@ -94,6 +94,31 @@ public class OverallConnection implements Serializable{
     @Override
     public String toString() {
         return "DatabaseClasses.OverallConnection[ overallConnectionPK=" + overallConnectionPK + " ]";
+    }
+
+    @Override
+    public Object getPK() {
+        return this.getOverallConnectionPK();
+    }
+
+    @Override
+    public EntityClass mergeWithObjectFromDatabase(EntityClass ec) {
+        
+        OverallConnection dbOC = (OverallConnection) ec;
+        
+        if(this.overallConnectionPK != null){
+            if (dbOC.overallConnectionPK == null || !this.overallConnectionPK.equals(dbOC.overallConnectionPK)) {
+                dbOC.overallConnectionPK = this.overallConnectionPK;
+            }
+        }
+        if(this.car != null){
+            if (dbOC.car == null || !this.car.equals(dbOC.car)) {
+                dbOC.car = this.car;
+            }
+        }
+        
+        return dbOC;
+
     }
     
 }

@@ -15,7 +15,7 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author School
+ * @author Elize
  */
 @Embeddable
 public class CarPositionDataPK implements Serializable {
@@ -24,15 +24,19 @@ public class CarPositionDataPK implements Serializable {
     private String unitId;
     @Basic(optional = false)
     @Column(name = "event_date")
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date eventDate;
+    @Basic(optional = false)
+    @Column(name = "connection_type")
+    private String connectionType;
 
     public CarPositionDataPK() {
     }
 
-    public CarPositionDataPK(String unitId, Date eventDate) {
+    public CarPositionDataPK(String unitId, Date eventDate, String connectionType) {
         this.unitId = unitId;
         this.eventDate = eventDate;
+        this.connectionType = connectionType;
     }
 
     public String getUnitId() {
@@ -51,11 +55,20 @@ public class CarPositionDataPK implements Serializable {
         this.eventDate = eventDate;
     }
 
+    public String getConnectionType() {
+        return connectionType;
+    }
+
+    public void setConnectionType(String connectionType) {
+        this.connectionType = connectionType;
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;
         hash += (unitId != null ? unitId.hashCode() : 0);
         hash += (eventDate != null ? eventDate.hashCode() : 0);
+        hash += (connectionType != null ? connectionType.hashCode() : 0);
         return hash;
     }
 
@@ -72,12 +85,15 @@ public class CarPositionDataPK implements Serializable {
         if ((this.eventDate == null && other.eventDate != null) || (this.eventDate != null && !this.eventDate.equals(other.eventDate))) {
             return false;
         }
+        if ((this.connectionType == null && other.connectionType != null) || (this.connectionType != null && !this.connectionType.equals(other.connectionType))) {
+            return false;
+        }
         return true;
     }
 
     @Override
     public String toString() {
-        return "DatabaseClasses.CarPositionDataPK[ unitId=" + unitId + ", eventDate=" + eventDate + " ]";
+        return "DatabaseClasses.CarPositionDataPK[ unitId=" + unitId + ", eventDate=" + eventDate + ", connectionType=" + connectionType + " ]";
     }
     
 }

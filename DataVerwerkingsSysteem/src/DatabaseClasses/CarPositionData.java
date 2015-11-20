@@ -8,7 +8,6 @@ package DatabaseClasses;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Date;
-import javax.persistence.CascadeType;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -20,7 +19,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author School
+ * @author Elize
  */
 @Entity
 @Table(name = "car_position_data")
@@ -29,59 +28,59 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "CarPositionData.findAll", query = "SELECT c FROM CarPositionData c"),
     @NamedQuery(name = "CarPositionData.findByUnitId", query = "SELECT c FROM CarPositionData c WHERE c.carPositionDataPK.unitId = :unitId"),
     @NamedQuery(name = "CarPositionData.findByEventDate", query = "SELECT c FROM CarPositionData c WHERE c.carPositionDataPK.eventDate = :eventDate"),
+    @NamedQuery(name = "CarPositionData.findByConnectionType", query = "SELECT c FROM CarPositionData c WHERE c.carPositionDataPK.connectionType = :connectionType"),
     @NamedQuery(name = "CarPositionData.findByLatitude", query = "SELECT c FROM CarPositionData c WHERE c.latitude = :latitude"),
     @NamedQuery(name = "CarPositionData.findByLongitude", query = "SELECT c FROM CarPositionData c WHERE c.longitude = :longitude"),
     @NamedQuery(name = "CarPositionData.findBySpeed", query = "SELECT c FROM CarPositionData c WHERE c.speed = :speed"),
     @NamedQuery(name = "CarPositionData.findByCourse", query = "SELECT c FROM CarPositionData c WHERE c.course = :course"),
     @NamedQuery(name = "CarPositionData.findByHdop", query = "SELECT c FROM CarPositionData c WHERE c.hdop = :hdop")})
-
-public class CarPositionData implements Serializable {
+public class CarPositionData implements Serializable, EntityClass {
     private static final long serialVersionUID = 1L;
     @EmbeddedId
-    protected CarPositionDataPK carPositionDataPK;
-    private BigInteger latitude;
-    private BigInteger longitude;
-    private Integer speed;
-    private Integer course;
-    private Integer hdop;
+    protected CarPositionDataPK carPositionDataPK = null;
+    private BigInteger latitude = null;
+    private BigInteger longitude = null;
+    private Integer speed = null;
+    private Integer course = null;
+    private Integer hdop = null;
     @JoinColumn(name = "unit_id", referencedColumnName = "unit_id", insertable = false, updatable = false)
-    @ManyToOne(optional = false, cascade = CascadeType.ALL)
-    private Car car;
-    @JoinColumn(name = "connection_type_id", referencedColumnName = "connection_type_id")
-    @ManyToOne
-    private ConnectionType connectionTypeId;
+    @ManyToOne(optional = false)
+    private Car car = null;
 
     public CarPositionData() {
     }
 
     public CarPositionData(CarPositionDataPK carPositionDataPK) {
         this.carPositionDataPK = carPositionDataPK;
+        this.car = new Car(carPositionDataPK.getUnitId());
+    }
+
+    public CarPositionData(String unitId, Date eventDate, String connectionType) {
+        this.carPositionDataPK = new CarPositionDataPK(unitId, eventDate, connectionType);
+        this.car = new Car(unitId);
     }
 
     /**
-     * Constructor for the CSV reader
+     * Constructor for the CSV file reader.
      * @param unitId
      * @param eventDate
+     * @param connectionType
      * @param latitude
      * @param longitude
      * @param speed
      * @param course
-     * @param hdop
-     * @param connectionTypeId 
+     * @param hdop 
      */
-    public CarPositionData(String unitId, Date eventDate, BigInteger latitude, BigInteger longitude, Integer speed, Integer course, Integer hdop, ConnectionType connectionTypeId) {
-        this.carPositionDataPK = new CarPositionDataPK(unitId, eventDate);
+    public CarPositionData(String unitId, Date eventDate, String connectionType, 
+            BigInteger latitude, BigInteger longitude, Integer speed, 
+            Integer course, Integer hdop) {
         this.latitude = latitude;
         this.longitude = longitude;
         this.speed = speed;
         this.course = course;
         this.hdop = hdop;
+        this.carPositionDataPK = new CarPositionDataPK(unitId, eventDate, connectionType);
         this.car = new Car(unitId);
-        this.connectionTypeId = connectionTypeId;
-    }
-
-    public CarPositionData(String unitId, Date eventDate) {
-        this.carPositionDataPK = new CarPositionDataPK(unitId, eventDate);
     }
 
     public CarPositionDataPK getCarPositionDataPK() {
@@ -140,14 +139,6 @@ public class CarPositionData implements Serializable {
         this.car = car;
     }
 
-    public ConnectionType getConnectionTypeId() {
-        return connectionTypeId;
-    }
-
-    public void setConnectionTypeId(ConnectionType connectionTypeId) {
-        this.connectionTypeId = connectionTypeId;
-    }
-
     @Override
     public int hashCode() {
         int hash = 0;
@@ -171,6 +162,57 @@ public class CarPositionData implements Serializable {
     @Override
     public String toString() {
         return "DatabaseClasses.CarPositionData[ carPositionDataPK=" + carPositionDataPK + " ]";
+    }
+
+    @Override
+    public Object getPK() {
+        return this.getCarPositionDataPK();
+    }
+    
+    @Override
+    public EntityClass mergeWithObjectFromDatabase(EntityClass ec) {
+      
+        CarPositionData dbCPD = (CarPositionData) ec;
+        
+      if(this.carPositionDataPK != null){
+            if (dbCPD.carPositionDataPK == null || !this.carPositionDataPK.equals(dbCPD.carPositionDataPK)) {
+                dbCPD.setCarPositionDataPK(this.carPositionDataPK);  
+            }
+        }
+      if(this.latitude != null){
+            if (dbCPD.latitude == null || this.latitude.compareTo(dbCPD.latitude) != 0){
+                dbCPD.setLatitude(this.latitude);
+            }
+      }
+      
+      if(this.longitude != null){
+            if (dbCPD.longitude == null || this.longitude.compareTo(dbCPD.longitude) !=  0) {
+                dbCPD.setLongitude(this.longitude);
+            }
+        }
+      if(this.speed != null){
+            if (dbCPD.speed == null || this.speed.intValue() != dbCPD.speed.intValue()) {
+                dbCPD.setSpeed(this.speed);
+            }
+        }
+      if(this.course != null){
+            if (dbCPD.course == null || this.course.intValue() != dbCPD.course.intValue()) {
+                dbCPD.setCourse(this.course);
+            }
+        }
+      if(this.hdop != null){
+            if (dbCPD.hdop == null || this.hdop.intValue() != dbCPD.hdop.intValue()) {
+                dbCPD.setHdop(this.hdop);
+            }
+      }
+      
+      if(this.car != null){
+            if (dbCPD.car == null || !this.car.equals(dbCPD.car)) {
+                dbCPD.setCar(this.car);
+            }
+      }
+      
+      return dbCPD;
     }
     
 }

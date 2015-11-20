@@ -19,33 +19,27 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author School
+ * @author Elize
  */
 @Entity
-@Table(catalog = "CityGis Data", schema = "public")
+@Table(name = "passwords")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Passwords.findAll", query = "SELECT p FROM Passwords p"),
-    @NamedQuery(name = "Passwords.findByUserName", query = "SELECT p FROM Passwords p WHERE p.userName = :userName"),
-    @NamedQuery(name = "Passwords.findByPassword", query = "SELECT p FROM Passwords p WHERE p.password = :password")})
-public class Password implements Serializable {
+    @NamedQuery(name = "Password.findAll", query = "SELECT p FROM Password p"),
+    @NamedQuery(name = "Password.findByUserName", query = "SELECT p FROM Password p WHERE p.userName = :userName"),
+    @NamedQuery(name = "Password.findByPassword", query = "SELECT p FROM Password p WHERE p.password = :password")})
+public class Password implements Serializable, EntityClass{
+    @Basic(optional = false)
+    @Column(name = "password")
+    private String password = null;
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
     @Column(name = "user_name")
-    private String userName;
-
-    public Password(String userName, String password, User users) {
-        this.userName = userName;
-        this.password = password;
-        this.users = users;
-    }
-    
-    @Basic(optional = false)
-    private String password;
+    private String userName = null;
     @JoinColumn(name = "user_name", referencedColumnName = "user_name", insertable = false, updatable = false)
     @OneToOne(optional = false)
-    private User users;
+    private User user = null;
 
     public Password() {
     }
@@ -75,12 +69,12 @@ public class Password implements Serializable {
         this.password = password;
     }
 
-    public User getUsers() {
-        return users;
+    public User getUser() {
+        return user;
     }
 
-    public void setUsers(User users) {
-        this.users = users;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     @Override
@@ -105,7 +99,44 @@ public class Password implements Serializable {
 
     @Override
     public String toString() {
-        return "DatabaseClasses.Passwords[ userName=" + userName + " ]";
+        return "DatabaseClasses.Password[ userName=" + userName + " ]";
     }
-    
+
+    @Override
+    public Object getPK() {
+        return this.getUserName();
+    }
+
+    @Override
+    public Car getCar() {
+        return null;
+    }
+
+    @Override
+    public EntityClass mergeWithObjectFromDatabase(EntityClass ec) {
+        
+        Password dbPassword = (Password) ec;
+        
+        if(this.password != null){
+            if (dbPassword.password == null || !this.password.equals(dbPassword.password)) {
+                dbPassword.password = this.password;   
+            }
+        }
+        
+        if(this.userName != null){
+            if (dbPassword.userName == null || !this.userName.equals(dbPassword.userName)) {
+                dbPassword.userName = this.userName;   
+            }
+        }
+        
+        if(this.user != null){
+            if (dbPassword.user == null || !this.user.equals(dbPassword.user)) {   
+                    dbPassword.user = this.user;
+                }
+        }
+
+        return dbPassword;
+    }
+
+ 
 }

@@ -8,6 +8,7 @@ package DatabaseClasses;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Date;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
@@ -20,54 +21,69 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author School
+ * @author Elize
  */
 @Entity
-@Table(name = "tcp_client_connections", catalog = "CityGis Data", schema = "public")
+@Table(name = "tcp_client_connections")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "TcpClientConnections.findAll", query = "SELECT t FROM TcpClientConnections t"),
-    @NamedQuery(name = "TcpClientConnections.findByUnitId", query = "SELECT t FROM TcpClientConnections t WHERE t.tcpClientConnectionsPK.unitId = :unitId"),
-    @NamedQuery(name = "TcpClientConnections.findByBeginTime", query = "SELECT t FROM TcpClientConnections t WHERE t.tcpClientConnectionsPK.beginTime = :beginTime"),
-    @NamedQuery(name = "TcpClientConnections.findByEndTime", query = "SELECT t FROM TcpClientConnections t WHERE t.tcpClientConnectionsPK.endTime = :endTime"),
-    @NamedQuery(name = "TcpClientConnections.findByRoundTripLatency", query = "SELECT t FROM TcpClientConnections t WHERE t.roundTripLatency = :roundTripLatency"),
-    @NamedQuery(name = "TcpClientConnections.findByOutstandingSends", query = "SELECT t FROM TcpClientConnections t WHERE t.outstandingSends = :outstandingSends")})
-public class TcpClientConnection implements Serializable {
+    @NamedQuery(name = "TcpClientConnection.findAll", query = "SELECT t FROM TcpClientConnection t"),
+    @NamedQuery(name = "TcpClientConnection.findByUnitId", query = "SELECT t FROM TcpClientConnection t WHERE t.tcpClientConnectionPK.unitId = :unitId"),
+    @NamedQuery(name = "TcpClientConnection.findByRoundTripLatency", query = "SELECT t FROM TcpClientConnection t WHERE t.roundTripLatency = :roundTripLatency"),
+    @NamedQuery(name = "TcpClientConnection.findByOutstandingSends", query = "SELECT t FROM TcpClientConnection t WHERE t.outstandingSends = :outstandingSends")})
+public class TcpClientConnection implements Serializable, EntityClass{
     private static final long serialVersionUID = 1L;
     @EmbeddedId
-    protected ConnectionsPK tcpClientConnectionsPK;
+    protected TcpClientConnectionPK tcpClientConnectionPK = null;
     @Column(name = "round_trip_latency")
-    private BigInteger roundTripLatency;
+    private BigInteger roundTripLatency = null;
     @Column(name = "outstanding_sends")
-    private Integer outstandingSends;
+    private Integer outstandingSends = null;
     @JoinColumn(name = "unit_id", referencedColumnName = "unit_id", insertable = false, updatable = false)
     @ManyToOne(optional = false)
-    private Car car;
+    private Car car = null;
 
     public TcpClientConnection() {
     }
 
-    public TcpClientConnection(ConnectionsPK tcpClientConnectionsPK) {
-        this.tcpClientConnectionsPK = tcpClientConnectionsPK;
+    public TcpClientConnection(TcpClientConnectionPK tcpClientConnectionPK) {
+        this.tcpClientConnectionPK = tcpClientConnectionPK;
     }
 
-    public TcpClientConnection(String unitId, Date beginTime, Date endTime) {
-        this.tcpClientConnectionsPK = new ConnectionsPK(unitId, beginTime, endTime);
+    /**
+     *
+     * @param unitId
+     * @param beginTime
+     * @param endTime
+     * @param roundTripLatency
+     * @param outstandingSends
+     */
+    public TcpClientConnection(String unitId, Date date, BigInteger roundTripLatency, Integer outstandingSends) {
+        this.roundTripLatency = roundTripLatency;
+        this.outstandingSends = outstandingSends;
+        this.car = new Car(unitId);
+        this.tcpClientConnectionPK = new TcpClientConnectionPK(unitId, date);
+    }
+    
+    
+
+    public TcpClientConnection(String unitId, Date date) {
+        this.tcpClientConnectionPK = new TcpClientConnectionPK(unitId, date);
     }
 
-    public TcpClientConnection(String unitId, Date beginTime, Date endTime, BigInteger roundTripLatency, Integer outstandingSends, Car car) {
-        this.tcpClientConnectionsPK = new ConnectionsPK(unitId, beginTime, endTime);
+    public TcpClientConnection(String unitId, Date date, BigInteger roundTripLatency, Integer outstandingSends, Car car) {
+        this.tcpClientConnectionPK = new TcpClientConnectionPK(unitId, date);
         this.roundTripLatency = roundTripLatency;
         this.outstandingSends = outstandingSends;
         this.car = car;
     }
 
-    public ConnectionsPK getTcpClientConnectionsPK() {
-        return tcpClientConnectionsPK;
+    public TcpClientConnectionPK getTcpClientConnectionPK() {
+        return tcpClientConnectionPK;
     }
 
-    public void setTcpClientConnectionsPK(ConnectionsPK tcpClientConnectionsPK) {
-        this.tcpClientConnectionsPK = tcpClientConnectionsPK;
+    public void setTcpClientConnectionPK(TcpClientConnectionPK tcpClientConnectionPK) {
+        this.tcpClientConnectionPK = tcpClientConnectionPK;
     }
 
     public BigInteger getRoundTripLatency() {
@@ -97,7 +113,7 @@ public class TcpClientConnection implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (tcpClientConnectionsPK != null ? tcpClientConnectionsPK.hashCode() : 0);
+        hash += (tcpClientConnectionPK != null ? tcpClientConnectionPK.hashCode() : 0);
         return hash;
     }
 
@@ -108,7 +124,7 @@ public class TcpClientConnection implements Serializable {
             return false;
         }
         TcpClientConnection other = (TcpClientConnection) object;
-        if ((this.tcpClientConnectionsPK == null && other.tcpClientConnectionsPK != null) || (this.tcpClientConnectionsPK != null && !this.tcpClientConnectionsPK.equals(other.tcpClientConnectionsPK))) {
+        if ((this.tcpClientConnectionPK == null && other.tcpClientConnectionPK != null) || (this.tcpClientConnectionPK != null && !this.tcpClientConnectionPK.equals(other.tcpClientConnectionPK))) {
             return false;
         }
         return true;
@@ -116,7 +132,45 @@ public class TcpClientConnection implements Serializable {
 
     @Override
     public String toString() {
-        return "DatabaseClasses.TcpClientConnections[ tcpClientConnectionsPK=" + tcpClientConnectionsPK + " ]";
+        return "DatabaseClasses.TcpClientConnection[ tcpClientConnectionPK=" + tcpClientConnectionPK + " ]";
+    }
+
+    @Override
+    public Object getPK() {
+        return this.getTcpClientConnectionPK();
+    }
+
+    @Override
+    public EntityClass mergeWithObjectFromDatabase(EntityClass ec) {
+        
+        TcpClientConnection dbTCC = (TcpClientConnection) ec;
+        
+        if(this.tcpClientConnectionPK != null){
+            if (dbTCC.tcpClientConnectionPK == null || !this.tcpClientConnectionPK.equals(dbTCC.tcpClientConnectionPK)) {
+                dbTCC.tcpClientConnectionPK = this.tcpClientConnectionPK;
+            }
+        }
+        
+        if(this.roundTripLatency != null){
+            if (dbTCC.roundTripLatency == null || this.roundTripLatency.compareTo(dbTCC.roundTripLatency) != 0) {
+                dbTCC.roundTripLatency = this.roundTripLatency;
+            }
+        }
+        
+        if(this.outstandingSends != null){
+            if (dbTCC.outstandingSends == null || this.outstandingSends.compareTo(dbTCC.outstandingSends) != 0) {
+                dbTCC.outstandingSends = this.outstandingSends;
+            }
+        }
+        
+        if(this.car != null){
+            if (dbTCC.car == null || !this.car.equals(dbTCC.car)) {
+                dbTCC.car = this.car;
+            }
+        }
+
+        return dbTCC;
+
     }
     
 }

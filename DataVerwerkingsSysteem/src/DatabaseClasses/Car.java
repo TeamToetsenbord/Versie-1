@@ -20,32 +20,33 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
- * Entity class for the cars in the database.
- * Used for the Connections, Monitoring, Events and Positions CSV files
- * @author School
+ *
+ * @author Elize
  */
 @Entity
-@Table(catalog = "CityGis Data", schema = "public")
+@Table(name = "cars")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Cars.findAll", query = "SELECT c FROM Cars c"),
-    @NamedQuery(name = "Cars.findByUnitId", query = "SELECT c FROM Cars c WHERE c.unitId = :unitId")})
-public class Car implements Serializable {
+    @NamedQuery(name = "Car.findAll", query = "SELECT c FROM Car c"),
+    @NamedQuery(name = "Car.findByUnitId", query = "SELECT c FROM Car c WHERE c.unitId = :unitId")})
+public class Car implements Serializable, EntityClass {
+    @OneToMany(cascade = {CascadeType.ALL}, mappedBy = "car")
+    private Collection<OverallConnection> overallConnectionsCollection;
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
     @Column(name = "unit_id")
-    private String unitId;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "car")
-    private Collection<CarStatusEvent> carStatusEventsCollection;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "cars")
-    private Collection<HsdpaConnection> hsdpaConnectionsCollection;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "car")
-    private Collection<OverallConnection> overallConnectionsCollection;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "cars")
-    private Collection<CarPositionData> carPositionDataCollection;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "car")
-    private Collection<TcpClientConnection> tcpClientConnectionsCollection;
+    private String unitId = null;
+    @OneToMany(cascade = {CascadeType.MERGE}, mappedBy = "car")
+    private Collection<CarStatusEvent> carStatusEventCollection = null;
+    @OneToMany(cascade = {CascadeType.ALL}, mappedBy = "car")
+    private Collection<HsdpaConnection> hsdpaConnectionCollection = null;
+    @OneToMany(cascade = {CascadeType.ALL}, mappedBy = "car")
+    private Collection<OverallConnection> overallConnectionCollection = null;
+    @OneToMany(cascade = {CascadeType.ALL}, mappedBy = "car")
+    private Collection<CarPositionData> carPositionDataCollection = null;
+    @OneToMany(cascade = {CascadeType.ALL}, mappedBy = "car")
+    private Collection<TcpClientConnection> tcpClientConnectionCollection = null;
 
     public Car() {
     }
@@ -63,31 +64,30 @@ public class Car implements Serializable {
     }
 
     @XmlTransient
-    public Collection<CarStatusEvent> getCarStatusEventsCollection() {
-        return carStatusEventsCollection;
+    public Collection<CarStatusEvent> getCarStatusEventCollection() {
+        return carStatusEventCollection;
     }
 
-    public void setCarStatusEventsCollection(Collection<CarStatusEvent> carStatusEventsCollection) {
-        this.carStatusEventsCollection = carStatusEventsCollection;
+    public void setCarStatusEventCollection(Collection<CarStatusEvent> carStatusEventCollection) {
+        this.carStatusEventCollection = carStatusEventCollection;
     }
 
     @XmlTransient
-    public Collection<HsdpaConnection> getHsdpaConnectionsCollection() {
-        return hsdpaConnectionsCollection;
+    public Collection<HsdpaConnection> getHsdpaConnectionCollection() {
+        return hsdpaConnectionCollection;
     }
 
-    public void setHsdpaConnectionsCollection(Collection<HsdpaConnection> hsdpaConnectionsCollection) {
-        this.hsdpaConnectionsCollection = hsdpaConnectionsCollection;
+    public void setHsdpaConnectionCollection(Collection<HsdpaConnection> hsdpaConnectionCollection) {
+        this.hsdpaConnectionCollection = hsdpaConnectionCollection;
     }
-
 
     @XmlTransient
-    public Collection<OverallConnection> getOverallConnectionsCollection() {
-        return overallConnectionsCollection;
+    public Collection<OverallConnection> getOverallConnectionCollection() {
+        return overallConnectionCollection;
     }
 
-    public void setOverallConnectionsCollection(Collection<OverallConnection> overallConnectionsCollection) {
-        this.overallConnectionsCollection = overallConnectionsCollection;
+    public void setOverallConnectionCollection(Collection<OverallConnection> overallConnectionCollection) {
+        this.overallConnectionCollection = overallConnectionCollection;
     }
 
     @XmlTransient
@@ -100,12 +100,12 @@ public class Car implements Serializable {
     }
 
     @XmlTransient
-    public Collection<TcpClientConnection> getTcpClientConnectionsCollection() {
-        return tcpClientConnectionsCollection;
+    public Collection<TcpClientConnection> getTcpClientConnectionCollection() {
+        return tcpClientConnectionCollection;
     }
 
-    public void setTcpClientConnectionsCollection(Collection<TcpClientConnection> tcpClientConnectionsCollection) {
-        this.tcpClientConnectionsCollection = tcpClientConnectionsCollection;
+    public void setTcpClientConnectionCollection(Collection<TcpClientConnection> tcpClientConnectionCollection) {
+        this.tcpClientConnectionCollection = tcpClientConnectionCollection;
     }
 
     @Override
@@ -130,7 +130,100 @@ public class Car implements Serializable {
 
     @Override
     public String toString() {
-        return "DatabaseClasses.Cars[ unitId=" + unitId + " ]";
+        return "DatabaseClasses.Car[ unitId=" + unitId + " ]";
+    }
+
+    @XmlTransient
+    public Collection<OverallConnection> getOverallConnectionsCollection() {
+        return overallConnectionsCollection;
+    }
+
+    public void setOverallConnectionsCollection(Collection<OverallConnection> overallConnectionsCollection) {
+        this.overallConnectionsCollection = overallConnectionsCollection;
+    }
+
+    @Override
+    public Object getPK() {
+        return this.getUnitId();
+    }
+
+    @Override
+    public Car getCar() {
+        return null;
+    }
+
+    @Override
+    public EntityClass mergeWithObjectFromDatabase(EntityClass ec) {
+        Car dbCar = (Car) ec;
+        if(this.unitId != null ){
+            if (dbCar.unitId == null || !this.unitId.equals(dbCar.getUnitId())){
+                dbCar.setUnitId(this.unitId);
+            }
+        }
+        
+        if(this.carStatusEventCollection != null){
+            if (dbCar.carStatusEventCollection == null){
+                dbCar.carStatusEventCollection = this.carStatusEventCollection;
+                
+            }else if(!dbCar.getCarStatusEventCollection().containsAll(carStatusEventCollection)){
+                addObjectToCollectionIfNeeded(dbCar.carStatusEventCollection,
+                        this.carStatusEventCollection);
+            }
+        }
+        
+        if(this.hsdpaConnectionCollection != null){
+            if (dbCar.hsdpaConnectionCollection == null) {
+                dbCar.hsdpaConnectionCollection = this.hsdpaConnectionCollection;
+            }else if (!dbCar.getHsdpaConnectionCollection().containsAll(
+                        hsdpaConnectionCollection)) {
+                    addObjectToCollectionIfNeeded(dbCar.hsdpaConnectionCollection,
+                            this.hsdpaConnectionCollection);
+                }
+        }
+        
+        if(this.overallConnectionCollection != null){
+            if (dbCar.overallConnectionCollection == null) {
+                dbCar.overallConnectionCollection = this.overallConnectionCollection;
+            }else if (!dbCar.getCarPositionDataCollection().containsAll(
+                        overallConnectionCollection)) {
+                    addObjectToCollectionIfNeeded(dbCar.carPositionDataCollection,
+                            this.overallConnectionCollection);
+            }
+        }
+        
+        if(this.carPositionDataCollection != null){          
+            if(dbCar.carPositionDataCollection == null){
+               dbCar.carPositionDataCollection = this.carPositionDataCollection;
+            }else if (!dbCar.getCarPositionDataCollection().containsAll(
+                        carPositionDataCollection)){
+                    addObjectToCollectionIfNeeded(dbCar.carPositionDataCollection,
+                            this.carPositionDataCollection);
+            }
+        }
+        
+        if(this.tcpClientConnectionCollection != null){
+            if (dbCar.tcpClientConnectionCollection == null) {
+                dbCar.tcpClientConnectionCollection = this.tcpClientConnectionCollection;
+            }else if (!dbCar.getCarPositionDataCollection().containsAll(
+                        tcpClientConnectionCollection)){
+                    addObjectToCollectionIfNeeded(dbCar.tcpClientConnectionCollection,
+                            this.tcpClientConnectionCollection);
+            }
+        }
+        
+        return dbCar;
     }
     
-}
+    private void addObjectToCollectionIfNeeded(
+            Collection<?> dbCollection, Collection<?> thisCollection){
+            Collection<EntityClass> databaseCollection 
+                    = (Collection<EntityClass>) dbCollection;
+            
+            for(Object object: thisCollection){
+                if(!databaseCollection.contains(object)){
+                    databaseCollection.add((EntityClass)object);
+                }
+            }
+    }
+    
+ }

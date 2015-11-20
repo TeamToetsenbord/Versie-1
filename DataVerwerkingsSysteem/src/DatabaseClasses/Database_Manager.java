@@ -5,6 +5,7 @@
  */
 package DatabaseClasses;
 
+import Readers.CSV_File_Reader;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.text.DateFormat;
@@ -52,55 +53,61 @@ public class Database_Manager extends Thread {
        
     @Override
     public void run() {
-               
         while(true){
-            
             if(!objectsToPersist.isEmpty()){
-               persistOrMergeObject(objectsToPersist.get(0));
                
+               persistOrUpdateObject(objectsToPersist.get(0));
+           
+               System.out.println(objectsToPersist.size());
+            }else{
+                if(CSV_File_Reader.reading == false && objectsToPersist.size() == 0){
+                System.out.println("Finished");
+                }
             }
-            }
-    
-              
+        }
     }
     
-    private void persistOrMergeObject(EntityClass object){
+    protected void persistOrUpdateObject(EntityClass object){
     
         try{
             EntityManager entityManager = entityManagerFactory.createEntityManager();
             entityManager.getTransaction().begin();
             
-            if(entityManager.find(object.getClass(),  object.getPK()) != null){
-                merge(object, entityManager);
-                
+            EntityClass objectInDatabaseFound = 
+                    entityManager.find(object.getClass(),  object.getPK());
+            if(objectInDatabaseFound != null && !objectInDatabaseFound.equals(object)){
+                update(object, entityManager, objectInDatabaseFound);
             }else{
                persist(object, entityManager);
             }
-         
-         
+            
             entityManager.getTransaction().commit();
             
             entityManager.clear();
             entityManager.close();
-            objectsToPersist.remove(object);
+            
           
         }catch(PersistenceException ex){
             System.out.println(ex);
         
         }catch(Exception ex){
-            System.out.println(ex);
+            System.out.println("Object: " + object + ". Exception: " + ex);
+        }finally{
+            objectsToPersist.remove(object);
         }
-         
-         
     }
     
-    private void merge(EntityClass object, EntityManager entityManager){
-       
-       
-       checkIfObjectHasCar(object, entityManager);
-       entityManager.merge(object);
-      
-    
+    /**
+     * Method for updating the object.
+     * Only contrasting values are inserted.
+     * @param newObject: the newest object,
+     * @param entityManager
+     * @param dbObject: the object found on the database.
+     */
+    private void update(EntityClass newObject, EntityManager entityManager, EntityClass dbObject){
+       EntityClass objectToPersist = newObject.mergeWithObjectFromDatabase(dbObject);
+       checkIfObjectHasCar(objectToPersist, entityManager);
+       entityManager.merge(objectToPersist);
     }
     
     /**
@@ -115,23 +122,30 @@ public class Database_Manager extends Thread {
     }
 
     public static void addObjectToPersistList(EntityClass object) {
-        objectsToPersist.add(object);       
+        objectsToPersist.add(object); 
+        
     }
     
     public static void addObjectToPersistListAtFirstPosition(EntityClass object){
         objectsToPersist.add(0, object);
     }
 
+    /**
+     * Method for inserting new cars.
+     * @param car: found car
+     * @param em 
+     */
     private void insertCarIfNeeded(Car car, EntityManager em) {
         if(em.find(Car.class, car.getUnitId()) == null){
             em.persist(car);
         }
     }
-      /**
-        * Since not all the entity classes have a getCar() method,
-        * we are going to check if it has one first
-        * If so, we are going to check if the car needs to be inserted into the database.
-        */
+    
+    /**
+     * Since not all the entity classes have a getCar() method,
+     * we are going to check if it has one first
+     * If so, we are going to check if the car needs to be inserted into the database.
+     */
     private void checkIfObjectHasCar(EntityClass object, EntityManager entityManager) {
         try {
             
@@ -143,6 +157,4 @@ public class Database_Manager extends Thread {
             System.out.println(ex);
         }
     }
-
-    
 }
