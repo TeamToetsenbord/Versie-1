@@ -7,8 +7,8 @@ package Readers;
 
 import DatabaseClasses.CarStatusEvent;
 import DatabaseClasses.Database_Manager;
-import static Readers.CSV_File_Reader.getDateByString;
-import static Readers.CSV_File_Reader.reading;
+import static Readers.CSVFileReader.getDateByString;
+import static Readers.CSVFileReader.reading;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.Date;
@@ -17,7 +17,7 @@ import java.util.Date;
  *
  * @author Elize
  */
-public class EventsCSVReaderThread extends CSV_File_Reader{
+public class EventsCSVReaderThread extends CSVFileReader{
     
     private static final String EVENTS_FILE_PATH = "CSVFiles/Events.csv";
     private String userPath = null;

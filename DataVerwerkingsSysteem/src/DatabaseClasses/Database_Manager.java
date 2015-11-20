@@ -5,7 +5,7 @@
  */
 package DatabaseClasses;
 
-import Readers.CSV_File_Reader;
+import Readers.CSVFileReader;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.text.DateFormat;
@@ -60,7 +60,7 @@ public class Database_Manager extends Thread {
            
                System.out.println(objectsToPersist.size());
             }else{
-                if(CSV_File_Reader.reading == false && objectsToPersist.size() == 0){
+                if(CSVFileReader.reading == false && objectsToPersist.size() == 0){
                 System.out.println("Finished");
                 }
             }

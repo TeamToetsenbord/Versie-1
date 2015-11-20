@@ -7,7 +7,7 @@ package Readers;
 
 import DatabaseClasses.CarPositionData;
 import DatabaseClasses.Database_Manager;
-import static Readers.CSV_File_Reader.reading;
+import static Readers.CSVFileReader.reading;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.math.BigInteger;
@@ -17,7 +17,7 @@ import java.util.Date;
  *
  * @author Ronald & Elize
  */
-public class PositionsCSVReaderThread extends CSV_File_Reader{
+public class PositionsCSVReaderThread extends CSVFileReader{
     
     private static final String POSITIONS_FILE_PATH = "CSVFiles/Positions.csv";
     private String userPath = null;
@@ -57,7 +57,7 @@ public class PositionsCSVReaderThread extends CSV_File_Reader{
             while ((line = br.readLine()) != null){
                 String [] lines = line.split(cvsSplitBy);
                 String dateString = lines[0];
-                Date dateFormatted = CSV_File_Reader.getDateByString(dateString);
+                Date dateFormatted = CSVFileReader.getDateByString(dateString);
                 String unitId = lines[1];
                 String rdx = lines[2];
                 String rdy = lines[3];
@@ -78,7 +78,7 @@ public class PositionsCSVReaderThread extends CSV_File_Reader{
                 float fy = Float.parseFloat(rdy);
                 
                 
-                long[] longAndLatArray = CSV_File_Reader.calculateLongAndLatFromRxAndRy((long)fx, (long)fy);
+                long[] longAndLatArray = CSVFileReader.calculateLongAndLatFromRxAndRy((long)fx, (long)fy);
                 BigInteger longitude = BigInteger.valueOf(longAndLatArray[0]); 
                 BigInteger latitude = BigInteger.valueOf(longAndLatArray[1]);
                 CarPositionData cpd = new CarPositionData(unitId, dateFormatted,

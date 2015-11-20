@@ -7,8 +7,8 @@ package Readers;
 
 import DatabaseClasses.Database_Manager;
 import DatabaseClasses.OverallConnection;
-import static Readers.CSV_File_Reader.getDateByString;
-import static Readers.CSV_File_Reader.reading;
+import static Readers.CSVFileReader.getDateByString;
+import static Readers.CSVFileReader.reading;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.Date;
@@ -17,7 +17,7 @@ import java.util.Date;
  *
  * @author Elize
  */
-public class ConnectionsCSVReaderThread extends CSV_File_Reader{
+public class ConnectionsCSVReaderThread extends CSVFileReader{
     
     private static final String CONNECTIONS_FILE_PATH = "CSVFiles/Connections.csv";  
     private String userPath = null;

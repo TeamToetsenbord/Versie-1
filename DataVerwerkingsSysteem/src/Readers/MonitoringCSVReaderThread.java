@@ -9,8 +9,8 @@ import DatabaseClasses.Database_Manager;
 import DatabaseClasses.EntityClass;
 import DatabaseClasses.HsdpaConnection;
 import DatabaseClasses.TcpClientConnection;
-import static Readers.CSV_File_Reader.calculateAverageByTicks;
-import static Readers.CSV_File_Reader.reading;
+import static Readers.CSVFileReader.calculateAverageByTicks;
+import static Readers.CSVFileReader.reading;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.math.BigDecimal;
@@ -23,7 +23,7 @@ import java.util.Date;
  *
  * @author Elize
  */
-public class MonitoringCSVReaderThread extends CSV_File_Reader {
+public class MonitoringCSVReaderThread extends CSVFileReader {
     
     private static final String MONITORING_FILE_PATH = "CSVFiles/Monitoring.csv";
     private String path = null;
