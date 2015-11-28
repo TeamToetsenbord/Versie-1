@@ -28,8 +28,19 @@ public class MonitoringCSVReaderThread extends CSVFileReader {
     private static final String MONITORING_FILE_PATH = "CSVFiles/Monitoring.csv";
     private String path = null;
     private String userPath = null;
+
+    @Override
+    public void run() {
+        readAndInsertMonitoringCSV();
+    }
+    
+    
+    
+    public MonitoringCSVReaderThread(String path){
+        this.userPath = path;
+    }
       
-      public void readAndInsertMonitoringCSV(String path){
+      public void readAndInsertMonitoringCSV(){
           
           reading = true;
            if(userPath == null){

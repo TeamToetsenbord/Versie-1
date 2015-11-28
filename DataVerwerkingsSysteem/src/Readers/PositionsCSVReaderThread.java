@@ -23,11 +23,14 @@ public class PositionsCSVReaderThread extends CSVFileReader{
     private String userPath = null;
     String path = null;
 
+    public PositionsCSVReaderThread(String path){
+        this.userPath = path;
+        
+    }
     @Override
     public void run() {
         readAndInsertPositionsCSV();
     }
-    
     
     public String getUserPath() {
         return userPath;

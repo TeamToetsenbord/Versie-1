@@ -21,6 +21,7 @@ public class InsertThread extends Database_Manager{
     boolean running = false;
     
     public InsertThread(List<EntityClass> objectsToPersistList){
+        super(null);
         this.objectsToPersist = objectsToPersistList;
         running = true;
         this.start();

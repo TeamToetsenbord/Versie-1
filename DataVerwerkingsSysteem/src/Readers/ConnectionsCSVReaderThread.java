@@ -28,6 +28,9 @@ public class ConnectionsCSVReaderThread extends CSVFileReader{
         readAndInsertConnectionsCSV();
     }
     
+    public ConnectionsCSVReaderThread(String path){
+     this. userPath = path;   
+    }
     
     public String getUserPath() {
         return userPath;

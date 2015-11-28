@@ -7,6 +7,7 @@ package dataverwerkingssysteem;
 
 import DatabaseClasses.Database_Manager;
 import Readers.PositionsCSVReaderThread;
+import UI.User_Interface;
 
 /**
  *
@@ -19,11 +20,9 @@ public class DataVerwerkingsSysteem {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        Database_Manager dbManager = new Database_Manager();
+        User_Interface ui = new User_Interface();
+        Database_Manager dbManager = new Database_Manager(ui);
         dbManager.start();
-        
-        PositionsCSVReaderThread reader = new PositionsCSVReaderThread();
-        reader.start();
         
     }
     

@@ -23,6 +23,11 @@ public class EventsCSVReaderThread extends CSVFileReader{
     private String userPath = null;
     String path = null;
 
+    public EventsCSVReaderThread(String path){
+        this.userPath = path;
+        
+    }
+    
     @Override
     public void run() {
         readAndInsertEventsCSV();

@@ -6,6 +6,7 @@
 package DatabaseClasses;
 
 import Readers.CSVFileReader;
+import UI.User_Interface;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.text.DateFormat;
@@ -29,30 +30,32 @@ public class Database_Manager extends Thread {
     
     private static ArrayList<EntityClass> objectsToPersist = new ArrayList();
     private static final int OBJECTSPERTRANSACTION = 100;
-        
     private static EntityManagerFactory entityManagerFactory
               = Persistence.createEntityManagerFactory("DataVerwerkingsSysteemPU");
     private EntityManager entityManager = null;
     private int count = 0;
+    private User_Interface ui = null;
+    
+    public Database_Manager(User_Interface ui){
+        this.ui = ui;
+    }
     
     
-
-       
     @Override
     public void run() {
         while(true){
-            if(!objectsToPersist.isEmpty()){
+            if(!objectsToPersist.isEmpty() && objectsToPersist.size() > 0){
                EntityClass objectToPersist = objectsToPersist.get(0);
                if(objectToPersist != null){
                persistOrUpdateObject(objectToPersist);
+               ui.setInsertingLabelText("true");
                }
             }else{
                 if(CSVFileReader.reading == false && objectsToPersist.size() == 0){
-                System.out.println("Finished");
+                ui.setInsertingLabelText("false");
                 }
             }
-        }
-        
+        }   
     }
     
     protected void persistOrUpdateObject(EntityClass object){
@@ -164,8 +167,5 @@ public class Database_Manager extends Thread {
             entityManagerFactory.close();
         }
     } 
-
-   
-    
         
 }

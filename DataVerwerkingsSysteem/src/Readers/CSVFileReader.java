@@ -95,4 +95,23 @@ public class CSVFileReader extends Thread{
     }
     
     
+    public static void readFileByType(String type, String path){
+        switch(type){
+            case "Positions":
+               new PositionsCSVReaderThread(path).start();
+               break;
+            case "Events":
+               new EventsCSVReaderThread(path).start();
+                break;
+            case "Monitoring":
+                new MonitoringCSVReaderThread(path).start();
+                break;
+            case "Connections":
+                new ConnectionsCSVReaderThread(path).start();
+                break;
+            
+        }
+    }
+    
+    
 }
