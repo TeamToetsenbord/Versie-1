@@ -28,10 +28,21 @@ import javax.swing.JOptionPane;
  */
 public class Database_Manager extends Thread {
     
+    /**
+     * ObjectsToPersist: 
+     * A list of all the object that need to be insterted or updated to the database.
+     * Some of these objects are already in the database, 
+     * but they will be handled in the the persistOrUpdateObject function.
+     */
     private static ArrayList<EntityClass> objectsToPersist = new ArrayList();
-    private static final int OBJECTSPERTRANSACTION = 100;
+    //The amount of objects that will be processed per transaction.
+    private static final int OBJECTS_PER_TRANSACTION = 100; 
+    /**
+     * entityManagerFactory: Creates a connections to the database.
+     * Since it is static, this connection should last as long as the program is running.
+     */    
     private static EntityManagerFactory entityManagerFactory
-              = Persistence.createEntityManagerFactory("DataVerwerkingsSysteemPU");
+              = Persistence.createEntityManagerFactory("DataProccesingSystemPU");
     private EntityManager entityManager = null;
     private int count = 0;
     private User_Interface ui = null;
@@ -40,7 +51,12 @@ public class Database_Manager extends Thread {
         this.ui = ui;
     }
     
-    
+    /**
+     * This method is run on an alternative thread.
+     * It will make sure all the objects in ObjectsToPersist are processed in the persistOrUpdateObject function.
+     * When the objectsToPersist list is empty, this method will still run, 
+     * but is wont do anything unil new objects are added to the objectsToPesrist list
+     */
     @Override
     public void run() {
         while(true){
@@ -64,7 +80,7 @@ public class Database_Manager extends Thread {
             int currentSize = objectsToPersist.size();
             if(count > 0){
             entityManager.joinTransaction();
-            }else if(count == 0 || currentSize < OBJECTSPERTRANSACTION){
+            }else if(count == 0 || currentSize < OBJECTS_PER_TRANSACTION){
             entityManager = entityManagerFactory.createEntityManager();
             entityManager.getTransaction().begin();
             
@@ -81,19 +97,19 @@ public class Database_Manager extends Thread {
             }
             
             count--;  
-            if(count == 0 || currentSize == OBJECTSPERTRANSACTION){
+            if(count == 0 || currentSize == OBJECTS_PER_TRANSACTION){
             entityManager.getTransaction().commit();
             entityManager.clear();
             entityManager.close();
-            count = OBJECTSPERTRANSACTION;
+            count = OBJECTS_PER_TRANSACTION;
             }
             
          
         }catch(PersistenceException ex){
-            System.out.println(ex);
-        
-        }catch(Exception ex){
             System.out.println("Object: " + object + ". Exception: " + ex);
+        }catch(Exception ex){
+            //TODO remove the pokemon programming:/
+            System.out.println(ex);
         }finally{
             objectsToPersist.remove(object);
         }
@@ -101,7 +117,11 @@ public class Database_Manager extends Thread {
     
     /**
      * Method for updating the object.
+     * By updating we want to get the existing from the database, and merge it with the new attributes.
+     * For example, the carId of a hspdConnection is found, but not stored in the database.
+     * In order to insert the new data, and keep the old data, we need to merge the object, and instert it.
      * Only contrasting values are inserted.
+     * You could compare this function with SQL UPDATE (Entity) SET (new attributes) WHERE (entityID)
      * @param newObject: the newest object,
      * @param entityManager
      * @param dbObject: the object found on the database.
@@ -113,23 +133,21 @@ public class Database_Manager extends Thread {
     }
     
     /**
-     * This is the persist method used by alle entities;
+     * This is the persist method used by all entities;
      * @param object: the entity to be inserted. 
      */
     public void persist(EntityClass object, EntityManager entityManager){
-              
        checkIfObjectHasCar(object, entityManager);
        entityManager.persist(object);
-       
     }
 
+    /**
+     * Method for adding objects to the (private) objectsToPersist list.
+     * Using this method, the list cannot be tampered with.
+     * @param object: The object to add to the list. This must be a child of EntityClass.
+     */
     public static void addObjectToPersistList(EntityClass object) {
-        objectsToPersist.add(object); 
-        
-    }
-    
-    public static void addObjectToPersistListAtFirstPosition(EntityClass object){
-        objectsToPersist.add(0, object);
+        objectsToPersist.add(object);    
     }
 
     /**
@@ -162,7 +180,6 @@ public class Database_Manager extends Thread {
     
     
     public static void closeConnection() {
-        
         if(entityManagerFactory.isOpen()){
             entityManagerFactory.close();
         }
