@@ -80,9 +80,9 @@ public class PositionsCSVReaderThread extends CSVFileReader{
                 float fy = Float.parseFloat(rdy);
                 
                 
-                long[] longAndLatArray = CSVFileReader.calculateLongAndLatFromRxAndRy((long)fx, (long)fy);
-                BigInteger longitude = BigInteger.valueOf(longAndLatArray[0]); 
-                BigInteger latitude = BigInteger.valueOf(longAndLatArray[1]);
+                double[] longAndLatArray = CSVFileReader.calculateLongAndLatFromRxAndRy((long)fx, (long)fy);
+                double longitude = longAndLatArray[0]; 
+                double latitude = longAndLatArray[1];
                 CarPositionData cpd = new CarPositionData(unitId, dateFormatted,
                         connectionType, latitude, longitude, Integer.parseInt(speed), Integer.parseInt(course), Integer.parseInt(hdop) );
                 Database_Manager.addObjectToPersistList(cpd);

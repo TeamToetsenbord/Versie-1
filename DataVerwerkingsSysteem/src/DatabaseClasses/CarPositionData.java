@@ -38,8 +38,8 @@ public class CarPositionData implements Serializable, EntityClass {
     private static final long serialVersionUID = 1L;
     @EmbeddedId
     protected CarPositionDataPK carPositionDataPK = null;
-    private BigInteger latitude = null;
-    private BigInteger longitude = null;
+    private double latitude = 0.0;
+    private double longitude = 0.0;
     private Integer speed = null;
     private Integer course = null;
     private Integer hdop = null;
@@ -72,7 +72,7 @@ public class CarPositionData implements Serializable, EntityClass {
      * @param hdop 
      */
     public CarPositionData(String unitId, Date eventDate, String connectionType, 
-            BigInteger latitude, BigInteger longitude, Integer speed, 
+            double latitude, double longitude, Integer speed, 
             Integer course, Integer hdop) {
         this.latitude = latitude;
         this.longitude = longitude;
@@ -91,19 +91,19 @@ public class CarPositionData implements Serializable, EntityClass {
         this.carPositionDataPK = carPositionDataPK;
     }
 
-    public BigInteger getLatitude() {
+    public double getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(BigInteger latitude) {
+    public void setLatitude(double latitude) {
         this.latitude = latitude;
     }
 
-    public BigInteger getLongitude() {
+    public double getLongitude() {
         return longitude;
     }
 
-    public void setLongitude(BigInteger longitude) {
+    public void setLongitude(double longitude) {
         this.longitude = longitude;
     }
 
@@ -179,14 +179,14 @@ public class CarPositionData implements Serializable, EntityClass {
                 dbCPD.setCarPositionDataPK(this.carPositionDataPK);  
             }
         }
-      if(this.latitude != null){
-            if (dbCPD.latitude == null || this.latitude.compareTo(dbCPD.latitude) != 0){
+      if(this.latitude != 0.0){
+            if (dbCPD.latitude == 0.0 || this.latitude != dbCPD.latitude){
                 dbCPD.setLatitude(this.latitude);
             }
       }
       
-      if(this.longitude != null){
-            if (dbCPD.longitude == null || this.longitude.compareTo(dbCPD.longitude) !=  0) {
+      if(this.longitude != 0.0){
+            if (dbCPD.longitude == 0.0 || this.longitude != dbCPD.longitude) {
                 dbCPD.setLongitude(this.longitude);
             }
         }

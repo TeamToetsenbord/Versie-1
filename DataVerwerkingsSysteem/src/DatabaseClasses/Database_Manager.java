@@ -43,10 +43,10 @@ public class Database_Manager extends Thread {
      */    
     private static EntityManagerFactory entityManagerFactory
               = Persistence.createEntityManagerFactory("DataProccesingSystemPU");
-    private EntityManager entityManager = null;
-    private int count = 0;
+    private static EntityManager entityManager = null;
+    private int count = OBJECTS_PER_TRANSACTION;
     private User_Interface ui = null;
-    
+      
     public Database_Manager(User_Interface ui){
         this.ui = ui;
     }
@@ -78,33 +78,27 @@ public class Database_Manager extends Thread {
     
         try{
             int currentSize = objectsToPersist.size();
-            if(count > 0){
-            entityManager.joinTransaction();
-            }else if(count == 0 || currentSize < OBJECTS_PER_TRANSACTION){
-            entityManager = entityManagerFactory.createEntityManager();
-            entityManager.getTransaction().begin();
-            
+            if(entityManager == null && !entityManager.isOpen()){
+               entityManager = entityManagerFactory.createEntityManager();
+               entityManager.getTransaction().begin();
             }
-            
-            
             EntityClass objectInDatabaseFound = 
                     entityManager.find(object.getClass(),  object.getPK());
             if(objectInDatabaseFound == null){
                 persist(object, entityManager);
             }else if(objectInDatabaseFound != null && !objectInDatabaseFound.equals(object)){
-                
                 update(object, entityManager, objectInDatabaseFound);
             }
             
             count--;  
-            if(count == 0 || currentSize == OBJECTS_PER_TRANSACTION){
+            if(count == 0 || currentSize <= OBJECTS_PER_TRANSACTION){
             entityManager.getTransaction().commit();
             entityManager.clear();
             entityManager.close();
             count = OBJECTS_PER_TRANSACTION;
+            System.out.println("committed");
             }
             
-         
         }catch(PersistenceException ex){
             System.out.println("Object: " + object + ". Exception: " + ex);
         }catch(Exception ex){

@@ -67,11 +67,11 @@ public class CSVFileReader extends Thread{
      * @param ry
      * @return the longitude, latitude in a double[].
      */
-    protected static long[] calculateLongAndLatFromRxAndRy(long rx, long ry){
+    protected static double[] calculateLongAndLatFromRxAndRy(long rx, long ry){
         
-        long x = rx;
-        long y = ry;
-        double dX = (x - 155000.0) * Math.pow(10, -5);
+        float x =  rx;
+        float y = ry;
+           double dX = (x - 155000.0) * Math.pow(10, -5);
 	double dY = (y - 463000.0) * Math.pow(10, -5);
 
 	double somN = ((3235.65389 * dY) + (-32.58297 * Math.pow(dX, 2)) + 
@@ -87,10 +87,11 @@ public class CSVFileReader extends Thread{
                 (0.00128 * dX * Math.pow(dY, 4)) + (0.00022 * Math.pow(dY, 2)) + 
                 (-0.00022 * Math.pow(dX, 2)) + (0.00026 * Math.pow(dX, 5));
 
-	long	latitude = Double.doubleToLongBits(52.15517 + (somN / 3600));
-	long	longitude = Double.doubleToLongBits(5.387206 + (somE / 3600));
+	double latitude = 52.15517 + (somN / 3600);
+	double longitude = 5.387206 + (somE / 3600);
+   
         
-        long[] latAndLongArray = {latitude, longitude};
+        double[] latAndLongArray = {latitude, longitude};
         return latAndLongArray;
     }
     
