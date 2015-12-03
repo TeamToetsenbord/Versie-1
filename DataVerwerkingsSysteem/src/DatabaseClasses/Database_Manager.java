@@ -13,6 +13,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,9 +47,28 @@ public class Database_Manager extends Thread {
     private static EntityManager entityManager = null;
     private int count = OBJECTS_PER_TRANSACTION;
     private User_Interface ui = null;
+    private static boolean running = false;
       
     public Database_Manager(User_Interface ui){
         this.ui = ui;
+        setOnExitActions();
+        running = true;
+        this.start();
+    }
+    
+    /**
+     * This method will set the exit loop for this application.
+     * When the program is exited, the connections should be closed.
+     */
+    private void setOnExitActions(){
+          Runtime.getRuntime().addShutdownHook(new Thread()
+{
+            @Override
+            public void run()
+            {
+                Database_Manager.closeConnection();
+            }
+         });
     }
     
     /**
@@ -59,16 +79,23 @@ public class Database_Manager extends Thread {
      */
     @Override
     public void run() {
-        while(true){
+        while(running){
+            if(entityManager == null){
+            entityManager = entityManagerFactory.createEntityManager();
+            }
             if(!objectsToPersist.isEmpty() && objectsToPersist.size() > 0){
                EntityClass objectToPersist = objectsToPersist.get(0);
                if(objectToPersist != null){
                persistOrUpdateObject(objectToPersist);
                ui.setInsertingLabelText("true");
+               
+                   
                }
             }else{
                 if(CSVFileReader.reading == false && objectsToPersist.size() == 0){
                 ui.setInsertingLabelText("false");
+               
+             
                 }
             }
         }   
@@ -78,8 +105,7 @@ public class Database_Manager extends Thread {
     
         try{
             int currentSize = objectsToPersist.size();
-            if(entityManager == null && !entityManager.isOpen()){
-               entityManager = entityManagerFactory.createEntityManager();
+            if(!entityManager.getTransaction().isActive() || !entityManager.isOpen() ){
                entityManager.getTransaction().begin();
             }
             EntityClass objectInDatabaseFound = 
@@ -94,9 +120,7 @@ public class Database_Manager extends Thread {
             if(count == 0 || currentSize <= OBJECTS_PER_TRANSACTION){
             entityManager.getTransaction().commit();
             entityManager.clear();
-            entityManager.close();
             count = OBJECTS_PER_TRANSACTION;
-            System.out.println("committed");
             }
             
         }catch(PersistenceException ex){
@@ -174,9 +198,26 @@ public class Database_Manager extends Thread {
     
     
     public static void closeConnection() {
+        try{
+        running = false;
+        if(entityManager.getTransaction().isActive()){
+            entityManager.getTransaction().setRollbackOnly();
+        }
+        
+        if(entityManager != null){
+            entityManager.getTransaction().rollback();
+            entityManager.clear();
+            entityManager.close();
+        }
         if(entityManagerFactory.isOpen()){
             entityManagerFactory.close();
         }
+        }catch(Exception ex){
+        
+        }
+       
     } 
+    
+   
         
 }

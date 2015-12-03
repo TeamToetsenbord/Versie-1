@@ -23,7 +23,7 @@ public class DataVerwerkingsSysteem {
     public static void main(String[] args) {
         User_Interface ui = new User_Interface();
         Database_Manager dbManager = new Database_Manager(ui);
-        dbManager.start();
+       
         
        
     }

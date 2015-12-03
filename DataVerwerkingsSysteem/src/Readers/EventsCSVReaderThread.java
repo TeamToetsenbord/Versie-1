@@ -44,6 +44,7 @@ public class EventsCSVReaderThread extends CSVFileReader{
     
     public void readAndInsertEventsCSV(){
        
+        
         reading = true;
         if(userPath == null){
             path = EVENTS_FILE_PATH;
@@ -82,6 +83,7 @@ public class EventsCSVReaderThread extends CSVFileReader{
                 catch (Exception e){
                 }
             }
+             System.out.println("Reading events.csv finished");
              reading = false;
         }   
     }
