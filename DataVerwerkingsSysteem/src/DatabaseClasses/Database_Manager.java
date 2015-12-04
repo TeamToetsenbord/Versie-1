@@ -30,12 +30,12 @@ import javax.swing.JOptionPane;
 public class Database_Manager extends Thread {
     
     /**
-     * ObjectsToPersist: 
+     * csvObjectsToPersist: 
      * A list of all the object that need to be insterted or updated to the database.
      * Some of these objects are already in the database, 
      * but they will be handled in the the persistOrUpdateObject function.
      */
-    private static ArrayList<EntityClass> objectsToPersist = new ArrayList();
+    private static ArrayList<EntityClass> csvObjectsToPersist = new ArrayList();
     //The amount of objects that will be processed per transaction.
     private static final int OBJECTS_PER_TRANSACTION = 100; 
     /**
@@ -83,16 +83,15 @@ public class Database_Manager extends Thread {
             if(entityManager == null){
             entityManager = entityManagerFactory.createEntityManager();
             }
-            if(!objectsToPersist.isEmpty() && objectsToPersist.size() > 0){
-               EntityClass objectToPersist = objectsToPersist.get(0);
+            if(!csvObjectsToPersist.isEmpty() && csvObjectsToPersist.size() > 0){
+               EntityClass objectToPersist = csvObjectsToPersist.get(0);
                if(objectToPersist != null){
-               persistOrUpdateObject(objectToPersist);
+               handleTransactionsForCSVFile(objectToPersist);
                ui.setInsertingLabelText("true");
-               
-                   
+                                  
                }
             }else{
-                if(CSVFileReader.reading == false && objectsToPersist.size() == 0){
+                if(CSVFileReader.reading == false && csvObjectsToPersist.size() == 0){
                 ui.setInsertingLabelText("false");
                
              
@@ -101,20 +100,13 @@ public class Database_Manager extends Thread {
         }   
     }
     
-    protected void persistOrUpdateObject(EntityClass object){
-    
-        try{
-            int currentSize = objectsToPersist.size();
+    private void handleTransactionsForCSVFile(EntityClass object){
+         int currentSize = csvObjectsToPersist.size();
             if(!entityManager.getTransaction().isActive() || !entityManager.isOpen() ){
                entityManager.getTransaction().begin();
             }
-            EntityClass objectInDatabaseFound = 
-                    entityManager.find(object.getClass(),  object.getPK());
-            if(objectInDatabaseFound == null){
-                persist(object, entityManager);
-            }else if(objectInDatabaseFound != null && !objectInDatabaseFound.equals(object)){
-                update(object, entityManager, objectInDatabaseFound);
-            }
+            
+            persistOrUpdateObject(object);
             
             count--;  
             if(count == 0 || currentSize <= OBJECTS_PER_TRANSACTION){
@@ -122,6 +114,22 @@ public class Database_Manager extends Thread {
             entityManager.clear();
             count = OBJECTS_PER_TRANSACTION;
             }
+        
+    }
+    
+    protected void persistOrUpdateObject(EntityClass object){
+    
+        try{
+           
+            EntityClass objectInDatabaseFound = 
+                    entityManager.find(object.getClass(),  object.getPK());
+            if(objectInDatabaseFound == null){
+                persist(object);
+            }else if(objectInDatabaseFound != null && !objectInDatabaseFound.equals(object)){
+                update(object, objectInDatabaseFound);
+            }
+            
+         
             
         }catch(PersistenceException ex){
             System.out.println("Object: " + object + ". Exception: " + ex);
@@ -129,7 +137,7 @@ public class Database_Manager extends Thread {
             //TODO remove the pokemon programming:/
             System.out.println(ex);
         }finally{
-            objectsToPersist.remove(object);
+            csvObjectsToPersist.remove(object);
         }
     }
     
@@ -144,7 +152,7 @@ public class Database_Manager extends Thread {
      * @param entityManager
      * @param dbObject: the object found on the database.
      */
-    private void update(EntityClass newObject, EntityManager entityManager, EntityClass dbObject){
+    private void update(EntityClass newObject, EntityClass dbObject){
        EntityClass objectToPersist = newObject.mergeWithObjectFromDatabase(dbObject);
        checkIfObjectHasCar(objectToPersist, entityManager);
        entityManager.merge(objectToPersist);
@@ -154,7 +162,7 @@ public class Database_Manager extends Thread {
      * This is the persist method used by all entities;
      * @param object: the entity to be inserted. 
      */
-    public void persist(EntityClass object, EntityManager entityManager){
+    public void persist(EntityClass object){
        checkIfObjectHasCar(object, entityManager);
        entityManager.persist(object);
     }
@@ -165,7 +173,7 @@ public class Database_Manager extends Thread {
      * @param object: The object to add to the list. This must be a child of EntityClass.
      */
     public static void addObjectToPersistList(EntityClass object) {
-        objectsToPersist.add(object);    
+        csvObjectsToPersist.add(object);    
     }
 
     /**

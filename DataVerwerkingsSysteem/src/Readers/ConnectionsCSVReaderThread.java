@@ -12,6 +12,7 @@ import static Readers.CSVFileReader.reading;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.Date;
+import static javax.swing.JOptionPane.showMessageDialog;
 
 /**
  *
@@ -56,7 +57,11 @@ public class ConnectionsCSVReaderThread extends CSVFileReader{
         String cvsSplitBy = ";"; //splits file bij elke ;
         try{
             br = new BufferedReader(new FileReader(path));
-            br.readLine();
+            String firstline = br.readLine();
+            if(!firstline.equals("DateTime;UnitId;Port;Value")){
+                showMessageDialog(null, "This file is not a connections.csv. Please try another one.");
+            return;
+            }
             while ((line = br.readLine()) != null){
                 String [] lines = line.split(cvsSplitBy);
                 String dateString = lines[0];

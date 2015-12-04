@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.math.BigInteger;
 import java.util.Date;
+import static javax.swing.JOptionPane.showMessageDialog;
 
 /**
  *
@@ -55,7 +56,11 @@ public class PositionsCSVReaderThread extends CSVFileReader{
         
         try{
             br = new BufferedReader(new FileReader(path));
-            br.readLine();
+            String firstline = br.readLine();
+            if(!firstline.equals("DateTime;UnitId;Rdx;Rdy;Speed;Course;NumSatellites;HDOP;Quality")){
+                showMessageDialog(null, "This file is not a Positions.csv. Please try another one.");
+                return;
+            }
             while ((line = br.readLine()) != null){
                 String [] lines = line.split(cvsSplitBy);
                 String dateString = lines[0];

@@ -18,6 +18,7 @@ import java.math.BigInteger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import static javax.swing.JOptionPane.showMessageDialog;
 
 /**
  *
@@ -55,7 +56,12 @@ public class MonitoringCSVReaderThread extends CSVFileReader {
         String cvsSplitBy = ";"; //splits file bij elke ;
         try{
             br = new BufferedReader(new FileReader(path));
-            br.readLine();
+            String firstline = br.readLine();
+            if(!firstline.equals("UnitId;BeginTime;EndTime;Type;Min;Max;Sum")){
+                showMessageDialog(null, "This file is not a Monitoring.csv. Please try another one.");
+                return;
+            }
+
             while ((line = br.readLine()) != null){
                 String [] lines = line.split(cvsSplitBy);              
                 getMonitoringObjectFound(lines);
