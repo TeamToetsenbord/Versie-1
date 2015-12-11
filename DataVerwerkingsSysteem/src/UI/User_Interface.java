@@ -6,6 +6,7 @@
 package UI;
 
 import Readers.CSVFileReader;
+import Server_Manager.HTTPReciever;
 import java.awt.event.MouseListener;
 import java.io.File;
 import javafx.stage.FileChooser;
@@ -48,6 +49,7 @@ public class User_Interface extends javax.swing.JFrame {
         pathLabel = new javax.swing.JLabel();
         insertingLabel = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
+        sendSignalBtn = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -64,22 +66,32 @@ public class User_Interface extends javax.swing.JFrame {
 
         jLabel1.setText("Inserting:");
 
+        sendSignalBtn.setText("Send Signal");
+        sendSignalBtn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                sendSignalBtnMouseClicked(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(38, 38, 38)
-                .addComponent(addFileBtn)
-                .addGap(18, 18, 18)
-                .addComponent(pathLabel)
-                .addContainerGap(211, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(insertingLabel)
                 .addGap(23, 23, 23))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(38, 38, 38)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(sendSignalBtn)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(addFileBtn)
+                        .addGap(18, 18, 18)
+                        .addComponent(pathLabel)))
+                .addContainerGap(211, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -88,7 +100,9 @@ public class User_Interface extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(insertingLabel)
                     .addComponent(jLabel1))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 159, Short.MAX_VALUE)
+                .addGap(7, 7, 7)
+                .addComponent(sendSignalBtn)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 129, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(addFileBtn)
                     .addComponent(pathLabel))
@@ -137,6 +151,10 @@ public class User_Interface extends javax.swing.JFrame {
                 }   
     }//GEN-LAST:event_addFileBtnMouseClicked
 
+    private void sendSignalBtnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_sendSignalBtnMouseClicked
+        HTTPReciever.sentSignal();
+    }//GEN-LAST:event_sendSignalBtnMouseClicked
+
     public void setInsertingLabelText(String text){
         insertingLabel.setText(text);
     
@@ -183,5 +201,6 @@ public class User_Interface extends javax.swing.JFrame {
     private javax.swing.JLabel insertingLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel pathLabel;
+    private javax.swing.JButton sendSignalBtn;
     // End of variables declaration//GEN-END:variables
 }
