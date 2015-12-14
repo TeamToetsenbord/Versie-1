@@ -96,9 +96,11 @@ public class HTTPReciever extends Thread {
         Socket socket = new Socket("localhost", 8000);
         System.out.println("Client:" + socket.getInetAddress().getHostAddress() + " " + socket.getPort());
         OutputStream dataOutputStream = socket.getOutputStream();
-        ObjectOutputStream objectOutput = new ObjectOutputStream(dataOutputStream);
-        objectOutput.writeObject(new String("Insert"));
-        objectOutput.writeObject(new Car("124536"));
+        dataOutputStream.write("Hello".getBytes());
+//        ObjectOutputStream objectOutput = new ObjectOutputStream(dataOutputStream);
+      
+        //objectOutput.writeObject(new String("Insert"));
+        //objectOutput.writeObject(new Car("124536"));
         
         dataOutputStream.close();
         
