@@ -38,16 +38,20 @@ public class Database_Manager extends Thread {
     private static ArrayList<EntityClass> csvObjectsToPersist = new ArrayList();
     //The amount of objects that will be processed per transaction.
     private static final int OBJECTS_PER_TRANSACTION = 100; 
+ 
+
+   
+    private static EntityManager entityManager = null;
+    private static final String persistenceName = "DataProccesingSystemPU";
+    private int count = OBJECTS_PER_TRANSACTION;
+    private User_Interface ui = null;
+    private static boolean running = false;
     /**
      * entityManagerFactory: Creates a connections to the database.
      * Since it is static, this connection should last as long as the program is running.
      */    
     private static EntityManagerFactory entityManagerFactory
-              = Persistence.createEntityManagerFactory("DataProccesingSystemPU");
-    private static EntityManager entityManager = null;
-    private int count = OBJECTS_PER_TRANSACTION;
-    private User_Interface ui = null;
-    private static boolean running = false;
+              = Persistence.createEntityManagerFactory(persistenceName);
       
     public Database_Manager(User_Interface ui){
         this.ui = ui;
@@ -56,13 +60,24 @@ public class Database_Manager extends Thread {
         this.start();
     }
     
+    public Database_Manager(){
+        setOnExitActions();
+    }
+    
+    public static String getPersistenceName() {
+        return persistenceName; 
+    }
+    
+    public static EntityManagerFactory getEntityManagerFactory() {
+        return entityManagerFactory;
+    }
+    
     /**
      * This method will set the exit loop for this application.
      * When the program is exited, the connections should be closed.
      */
     private void setOnExitActions(){
-          Runtime.getRuntime().addShutdownHook(new Thread()
-{
+          Runtime.getRuntime().addShutdownHook(new Thread(){
             @Override
             public void run()
             {
@@ -80,21 +95,26 @@ public class Database_Manager extends Thread {
     @Override
     public void run() {
         while(running){
+            int currentSize = csvObjectsToPersist.size();
+            if(currentSize > 1500){
+                //List<EntityClass> newList = csvObjectsToPersist.subList(currentSize - 100, currentSize);
+                //csvObjectsToPersist.removeAll(newList);
+                //InsertThread is = new InsertThread(newList);
+            }
+            
             if(entityManager == null){
             entityManager = entityManagerFactory.createEntityManager();
             }
+            
             if(!csvObjectsToPersist.isEmpty() && csvObjectsToPersist.size() > 0){
                EntityClass objectToPersist = csvObjectsToPersist.get(0);
                if(objectToPersist != null){
                handleTransactionsForCSVFile(objectToPersist);
-               ui.setInsertingLabelText("true");
-                                  
+               ui.setInsertingLabelText("true");               
                }
             }else{
                 if(CSVFileReader.reading == false && csvObjectsToPersist.size() == 0){
                 ui.setInsertingLabelText("false");
-               
-             
                 }
             }
         }   
@@ -106,7 +126,7 @@ public class Database_Manager extends Thread {
                entityManager.getTransaction().begin();
             }
             
-            persistOrUpdateObject(object);
+            persistOrUpdateObject(object, entityManager, csvObjectsToPersist);
             
             count--;  
             if(count == 0 || currentSize <= OBJECTS_PER_TRANSACTION){
@@ -117,19 +137,18 @@ public class Database_Manager extends Thread {
         
     }
     
-    protected void persistOrUpdateObject(EntityClass object){
+    protected void persistOrUpdateObject(EntityClass object, 
+            EntityManager entityManager, 
+            List<EntityClass>objectsToPersist){
     
         try{
-           
             EntityClass objectInDatabaseFound = 
                     entityManager.find(object.getClass(),  object.getPK());
             if(objectInDatabaseFound == null){
-                persist(object);
+                persist(object, entityManager);
             }else if(objectInDatabaseFound != null && !objectInDatabaseFound.equals(object)){
-                update(object, objectInDatabaseFound);
+                update(object, objectInDatabaseFound, entityManager);
             }
-            
-         
             
         }catch(PersistenceException ex){
             System.out.println("Object: " + object + ". Exception: " + ex);
@@ -137,7 +156,7 @@ public class Database_Manager extends Thread {
             //TODO remove the pokemon programming:/
             System.out.println(ex);
         }finally{
-            csvObjectsToPersist.remove(object);
+            objectsToPersist.remove(object);
         }
     }
     
@@ -152,7 +171,7 @@ public class Database_Manager extends Thread {
      * @param entityManager
      * @param dbObject: the object found on the database.
      */
-    private void update(EntityClass newObject, EntityClass dbObject){
+    private void update(EntityClass newObject, EntityClass dbObject, EntityManager entityManager){
        EntityClass objectToPersist = newObject.mergeWithObjectFromDatabase(dbObject);
        checkIfObjectHasCar(objectToPersist, entityManager);
        entityManager.merge(objectToPersist);
@@ -162,7 +181,7 @@ public class Database_Manager extends Thread {
      * This is the persist method used by all entities;
      * @param object: the entity to be inserted. 
      */
-    public void persist(EntityClass object){
+    public void persist(EntityClass object, EntityManager entityManager){
        checkIfObjectHasCar(object, entityManager);
        entityManager.persist(object);
     }
@@ -173,7 +192,7 @@ public class Database_Manager extends Thread {
      * @param object: The object to add to the list. This must be a child of EntityClass.
      */
     public static void addObjectToPersistList(EntityClass object) {
-        csvObjectsToPersist.add(object);    
+        csvObjectsToPersist.add(object);  
     }
 
     /**

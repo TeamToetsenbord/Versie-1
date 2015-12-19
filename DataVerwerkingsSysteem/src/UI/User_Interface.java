@@ -5,11 +5,13 @@
  */
 package UI;
 
+import DatabaseClasses.Database_Manager;
 import Readers.CSVFileReader;
 import Server_Manager.HTTPReciever;
 import java.awt.event.MouseListener;
 import java.io.File;
 import javafx.stage.FileChooser;
+import javax.persistence.EntityManager;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -27,6 +29,8 @@ public class User_Interface extends javax.swing.JFrame {
     
     String path = null;
     String[] types = {"Positions", "Events", "Monitoring", "Connections" };
+    private static javax.swing.JLabel insertingLabel;
+    
 
     /**
      * Creates new form User_Interface
@@ -70,6 +74,9 @@ public class User_Interface extends javax.swing.JFrame {
         sendSignalBtn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 sendSignalBtnMouseClicked(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                sendSignalBtnMouseEntered(evt);
             }
         });
 
@@ -123,7 +130,6 @@ public class User_Interface extends javax.swing.JFrame {
                     JFileChooser chooser = new JFileChooser();
                     chooser.setCurrentDirectory(new java.io.File("."));
                     chooser.setDialogTitle("Select a csv file:");
-                    //chooser.setAcceptAllFileFilterUsed(false);
                         if(chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                          pathLabel.setText(chooser.getSelectedFile().getAbsolutePath());
                          path = chooser.getSelectedFile().getAbsolutePath();
@@ -152,19 +158,23 @@ public class User_Interface extends javax.swing.JFrame {
     }//GEN-LAST:event_addFileBtnMouseClicked
 
     private void sendSignalBtnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_sendSignalBtnMouseClicked
-        HTTPReciever.sentSignal();
+        //HTTPReciever.sentSignal();
+        
+       
     }//GEN-LAST:event_sendSignalBtnMouseClicked
 
-    public void setInsertingLabelText(String text){
+    private void sendSignalBtnMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_sendSignalBtnMouseEntered
+        // TODO add your handling code here:
+    }//GEN-LAST:event_sendSignalBtnMouseEntered
+
+    public static void setInsertingLabelText(String text){
         insertingLabel.setText(text);
-    
     }
     
     
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addFileBtn;
-    private javax.swing.JLabel insertingLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel pathLabel;
     private javax.swing.JButton sendSignalBtn;

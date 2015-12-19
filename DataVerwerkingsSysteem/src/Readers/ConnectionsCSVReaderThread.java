@@ -5,6 +5,7 @@
  */
 package Readers;
 
+import DatabaseClasses.CSVInsertManager;
 import DatabaseClasses.Database_Manager;
 import DatabaseClasses.OverallConnection;
 import static Readers.CSVFileReader.getDateByString;
@@ -44,7 +45,7 @@ public class ConnectionsCSVReaderThread extends CSVFileReader{
         
     public void readAndInsertConnectionsCSV(){
        
-        reading = true;
+        CSVFileReader.setReading(true);
         if(userPath == null){
             path = CONNECTIONS_FILE_PATH;
         }else{
@@ -73,8 +74,8 @@ public class ConnectionsCSVReaderThread extends CSVFileReader{
                 Date dateFormatted = getDateByString(dateString);   
  
                 OverallConnection overallConnection = new OverallConnection(dateFormatted, unitId, connected);
-                Database_Manager.addObjectToPersistList(overallConnection);
-                               
+               //Database_Manager.addObjectToPersistList(overallConnection);
+                 CSVInsertManager.addObjectToPersistList(overallConnection);
             }
         }
         catch (Exception ex){    
@@ -88,7 +89,7 @@ public class ConnectionsCSVReaderThread extends CSVFileReader{
                 catch (Exception e){
                 }
             }
-            reading = false;
+            CSVFileReader.setReading(false);
         }   
     }
 }

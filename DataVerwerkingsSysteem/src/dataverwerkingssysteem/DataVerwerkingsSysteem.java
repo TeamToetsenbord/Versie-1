@@ -5,12 +5,14 @@
  */
 package dataverwerkingssysteem;
 
+import DatabaseClasses.Car;
 import DatabaseClasses.Database_Manager;
 import Readers.PositionsCSVReaderThread;
 import Server_Manager.HTTPReciever;
 import UI.User_Interface;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import javax.persistence.EntityManager;
 
 /**
  *
@@ -25,8 +27,8 @@ public class DataVerwerkingsSysteem {
         User_Interface ui = new User_Interface();
         Database_Manager dbManager = new Database_Manager(ui);
        
-        HTTPReciever h = new HTTPReciever();
-        
+           
+        //HTTPReciever h = new HTTPReciever();
        
     }
     

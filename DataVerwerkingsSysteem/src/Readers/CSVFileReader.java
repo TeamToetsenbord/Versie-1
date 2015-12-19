@@ -5,6 +5,7 @@
  */
 package Readers;
 
+import DatabaseClasses.CSVInsertManager;
 import DatabaseClasses.CarPositionData;
 import DatabaseClasses.CarStatusEvent;
 import DatabaseClasses.Database_Manager;
@@ -32,11 +33,21 @@ public class CSVFileReader extends Thread{
     
     private static final int TICKS_PER_SECOND = 60;
     public static boolean reading = false;
+
+    public static boolean isReading() {
+        return reading;
+    }
+
+    public static void setReading(boolean reading) {
+        CSVFileReader.reading = reading;
+        if(!reading){
+            CSVInsertManager.createNewInsertThreadIfNeeded();
+        }
+    }
     
     public CSVFileReader(){
         
     }
-
     
     protected static Date getDateByString(String string){
     

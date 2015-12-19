@@ -5,6 +5,7 @@
  */
 package Readers;
 
+import DatabaseClasses.CSVInsertManager;
 import DatabaseClasses.CarPositionData;
 import DatabaseClasses.Database_Manager;
 import static Readers.CSVFileReader.reading;
@@ -43,7 +44,7 @@ public class PositionsCSVReaderThread extends CSVFileReader{
             
     public void readAndInsertPositionsCSV(){
         
-        reading = true;
+        CSVFileReader.setReading(true);
        
         if(userPath == null){
             path = POSITIONS_FILE_PATH;
@@ -90,7 +91,8 @@ public class PositionsCSVReaderThread extends CSVFileReader{
                 double latitude = longAndLatArray[1];
                 CarPositionData cpd = new CarPositionData(unitId, dateFormatted,
                         connectionType, latitude, longitude, Integer.parseInt(speed), Integer.parseInt(course), Integer.parseInt(hdop) );
-                Database_Manager.addObjectToPersistList(cpd);
+                //Database_Manager.addObjectToPersistList(cpd);
+                CSVInsertManager.addObjectToPersistList(cpd);
             }
         }catch (Exception ex){   
             System.out.println(ex);
@@ -104,7 +106,7 @@ public class PositionsCSVReaderThread extends CSVFileReader{
                 }
             }
             System.out.println("Reading positions.csv finished");
-            reading = false;
+            CSVFileReader.setReading(false);
         }
     }
 }

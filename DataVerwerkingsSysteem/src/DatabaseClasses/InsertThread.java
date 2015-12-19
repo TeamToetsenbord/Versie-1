@@ -7,6 +7,8 @@ package DatabaseClasses;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 
 /**
  *
@@ -17,11 +19,15 @@ public class InsertThread extends Database_Manager{
     /**
      * Not really working. Maybe try something else?
      */
-    List<EntityClass> objectsToPersist = null;
-    boolean running = false;
+    private List<EntityClass> objectsToPersist = null;
+    private boolean running = false;
+    private EntityManager em = null;
     
-    public InsertThread(List<EntityClass> objectsToPersistList){
-        super(null);
+    
+    public InsertThread(List<EntityClass> objectsToPersistList, EntityManagerFactory emf){
+        super();
+        em = emf.createEntityManager();
+        em.getTransaction().begin();
         this.objectsToPersist = objectsToPersistList;
         running = true;
         this.start();
@@ -29,17 +35,17 @@ public class InsertThread extends Database_Manager{
 
     @Override
     public void run() {
-        
         while(running){
-        if(objectsToPersist.isEmpty()){
-        super.persistOrUpdateObject(objectsToPersist.get(0));
+        if(!objectsToPersist.isEmpty()){
+        super.persistOrUpdateObject(objectsToPersist.get(0), em, objectsToPersist);
         }else{
+         em.getTransaction().commit();
+         em.clear();
+         em.close();
          running = false;
+         CSVInsertManager.removeThread(this);
         }
         }
     }
-    
-    
-    
     
 }

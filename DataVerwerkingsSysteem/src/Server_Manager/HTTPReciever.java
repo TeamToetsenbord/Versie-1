@@ -23,12 +23,15 @@ import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+
 /**
  *
  * @author Elize
  */
 public class HTTPReciever extends Thread {
 
+    
+    
     public HTTPReciever() {
         this.start();
     }
@@ -40,6 +43,8 @@ public class HTTPReciever extends Thread {
        while(true){
            recieveAndInsertObject();
        }
+       
+ 
     }
 
     //Method to recieve all messages from outside clients.
@@ -64,7 +69,7 @@ public class HTTPReciever extends Thread {
             while((readChar = is.read()) != -1){
             readString += (char) readChar;
             }
-            System.out.println("String:" + readString);
+            System.out.println("Read String:" + readString);
         
           //Read the objects in the inputstream, I don't think we are going to use this.
           //Maybe for inserting live data?
@@ -74,7 +79,7 @@ public class HTTPReciever extends Thread {
 //        Car message2 = (Car) objectInput.readObject();
 //        System.out.println(message1 + "/n" +  message2.toString());
               
-        }catch(Exception e){System.out.println(e);}
+        }catch(Exception e){System.out.println("Exception: " + e);}
         finally{
         try {
             is.close();

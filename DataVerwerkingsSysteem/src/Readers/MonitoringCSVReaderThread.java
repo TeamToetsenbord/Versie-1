@@ -5,6 +5,7 @@
  */
 package Readers;
 
+import DatabaseClasses.CSVInsertManager;
 import DatabaseClasses.Database_Manager;
 import DatabaseClasses.EntityClass;
 import DatabaseClasses.HsdpaConnection;
@@ -43,7 +44,7 @@ public class MonitoringCSVReaderThread extends CSVFileReader {
       
       public void readAndInsertMonitoringCSV(){
           
-          reading = true;
+          CSVFileReader.setReading(true);
            if(userPath == null){
             path = MONITORING_FILE_PATH;
             }else{
@@ -81,7 +82,7 @@ public class MonitoringCSVReaderThread extends CSVFileReader {
                 }
                 System.out.println("reading finished");
             }
-            reading = false;
+            CSVFileReader.setReading(false);
         }
         
     }
@@ -135,7 +136,8 @@ public class MonitoringCSVReaderThread extends CSVFileReader {
                 }
                 
                 if(object != null){
-                    Database_Manager.addObjectToPersistList(object);
+                    //Database_Manager.addObjectToPersistList(object);
+                    CSVInsertManager.addObjectToPersistList(object);
                 }
                 
     }
