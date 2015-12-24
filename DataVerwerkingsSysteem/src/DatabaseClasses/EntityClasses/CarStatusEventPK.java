@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package DatabaseClasses;
+package DatabaseClasses.EntityClasses;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -18,32 +18,20 @@ import javax.persistence.TemporalType;
  * @author School
  */
 @Embeddable
-public class OverallConnectionPK implements Serializable {
+public class CarStatusEventPK implements Serializable {
+    @Basic(optional = false)
+    @Column(name = "unit_id")
+    private String unitId;
     @Basic(optional = false)
     @Column(name = "event_date")
     @Temporal(TemporalType.TIMESTAMP)
-    private Date eventDate = null;
-    @Basic(optional = false)
-    @Column(name = "unit_id")
-    private String unitId = null;
-    @Basic(optional = false)
-    @Column(name = "connected")
-    private boolean connected;
+    private Date eventDate;
 
-    public OverallConnectionPK() {
+    public CarStatusEventPK() {
     }
 
-    public OverallConnectionPK(Date eventDate, String unitId, boolean connected) {
-        this.eventDate = eventDate;
+    public CarStatusEventPK(String unitId, Date eventDate) {
         this.unitId = unitId;
-        this.connected = connected;
-    }
-
-    public Date getEventDate() {
-        return eventDate;
-    }
-
-    public void setEventDate(Date eventDate) {
         this.eventDate = eventDate;
     }
 
@@ -55,37 +43,33 @@ public class OverallConnectionPK implements Serializable {
         this.unitId = unitId;
     }
 
-    public boolean getConnected() {
-        return connected;
+    public Date getEventDate() {
+        return eventDate;
     }
 
-    public void setConnected(boolean connected) {
-        this.connected = connected;
+    public void setEventDate(Date eventDate) {
+        this.eventDate = eventDate;
     }
 
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (eventDate != null ? eventDate.hashCode() : 0);
         hash += (unitId != null ? unitId.hashCode() : 0);
-        hash += (connected ? 1 : 0);
+        hash += (eventDate != null ? eventDate.hashCode() : 0);
         return hash;
     }
 
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof OverallConnectionPK)) {
+        if (!(object instanceof CarStatusEventPK)) {
             return false;
         }
-        OverallConnectionPK other = (OverallConnectionPK) object;
-        if ((this.eventDate == null && other.eventDate != null) || (this.eventDate != null && !this.eventDate.equals(other.eventDate))) {
-            return false;
-        }
+        CarStatusEventPK other = (CarStatusEventPK) object;
         if ((this.unitId == null && other.unitId != null) || (this.unitId != null && !this.unitId.equals(other.unitId))) {
             return false;
         }
-        if (this.connected != other.connected) {
+        if ((this.eventDate == null && other.eventDate != null) || (this.eventDate != null && !this.eventDate.equals(other.eventDate))) {
             return false;
         }
         return true;
@@ -93,9 +77,7 @@ public class OverallConnectionPK implements Serializable {
 
     @Override
     public String toString() {
-        return "DatabaseClasses.OverallConnectionPK[ eventDate=" + eventDate + ", unitId=" + unitId + ", connected=" + connected + " ]";
+        return "DatabaseClasses.CarStatusEventPK[ unitId=" + unitId + ", eventDate=" + eventDate + " ]";
     }
-    
-  
     
 }

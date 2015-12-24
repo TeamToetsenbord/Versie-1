@@ -5,6 +5,8 @@
  */
 package DatabaseClasses;
 
+import DatabaseClasses.EntityClasses.Car;
+import DatabaseClasses.EntityClasses.EntityClass;
 import Readers.CSVFileReader;
 import UI.User_Interface;
 import java.io.Serializable;
@@ -38,9 +40,7 @@ public class Database_Manager extends Thread {
     private static ArrayList<EntityClass> csvObjectsToPersist = new ArrayList();
     //The amount of objects that will be processed per transaction.
     private static final int OBJECTS_PER_TRANSACTION = 100; 
- 
-
-   
+    
     private static EntityManager entityManager = null;
     private static final String persistenceName = "DataProccesingSystemPU";
     private int count = OBJECTS_PER_TRANSACTION;
@@ -81,7 +81,7 @@ public class Database_Manager extends Thread {
             @Override
             public void run()
             {
-                Database_Manager.closeConnection();
+                Database_Manager.closeConnection(); 
             }
          });
     }
@@ -95,13 +95,7 @@ public class Database_Manager extends Thread {
     @Override
     public void run() {
         while(running){
-            int currentSize = csvObjectsToPersist.size();
-            if(currentSize > 1500){
-                //List<EntityClass> newList = csvObjectsToPersist.subList(currentSize - 100, currentSize);
-                //csvObjectsToPersist.removeAll(newList);
-                //InsertThread is = new InsertThread(newList);
-            }
-            
+                    
             if(entityManager == null){
             entityManager = entityManagerFactory.createEntityManager();
             }
@@ -113,7 +107,7 @@ public class Database_Manager extends Thread {
                ui.setInsertingLabelText("true");               
                }
             }else{
-                if(CSVFileReader.reading == false && csvObjectsToPersist.size() == 0){
+                if(CSVFileReader.reading == false && csvObjectsToPersist.isEmpty() && !CSVInsertManager.isInserting()){
                 ui.setInsertingLabelText("false");
                 }
             }
@@ -138,25 +132,31 @@ public class Database_Manager extends Thread {
     }
     
     protected void persistOrUpdateObject(EntityClass object, 
-            EntityManager entityManager, 
-            List<EntityClass>objectsToPersist){
-    
-        try{
-            EntityClass objectInDatabaseFound = 
-                    entityManager.find(object.getClass(),  object.getPK());
-            if(objectInDatabaseFound == null){
-                persist(object, entityManager);
-            }else if(objectInDatabaseFound != null && !objectInDatabaseFound.equals(object)){
-                update(object, objectInDatabaseFound, entityManager);
-            }
+            EntityManager em, 
+            List<EntityClass> objectsToPersist){
             
-        }catch(PersistenceException ex){
+            if(!em.getTransaction().isActive()){
+             em.getTransaction().begin();   
+            }
+            try{
+            EntityClass objectInDatabaseFound = 
+                    em.find(object.getClass(),  entityManagerFactory.getPersistenceUnitUtil().getIdentifier(object));
+            if(objectInDatabaseFound == null){
+                persist(object, em);
+            }else if(objectInDatabaseFound != null && !objectInDatabaseFound.equals(object)){
+                update(object, objectInDatabaseFound, em);
+            }
+            }catch(PersistenceException ex){
             System.out.println("Object: " + object + ". Exception: " + ex);
         }catch(Exception ex){
             //TODO remove the pokemon programming:/
             System.out.println(ex);
         }finally{
             objectsToPersist.remove(object);
+            if(em.getTransaction().isActive()){
+                em.getTransaction().commit();
+            }
+            
         }
     }
     
@@ -171,19 +171,20 @@ public class Database_Manager extends Thread {
      * @param entityManager
      * @param dbObject: the object found on the database.
      */
-    private void update(EntityClass newObject, EntityClass dbObject, EntityManager entityManager){
+    private void update(EntityClass newObject, EntityClass dbObject, EntityManager em){
+        
        EntityClass objectToPersist = newObject.mergeWithObjectFromDatabase(dbObject);
-       checkIfObjectHasCar(objectToPersist, entityManager);
-       entityManager.merge(objectToPersist);
+       checkIfObjectHasCar(objectToPersist, em);
+       em.merge(objectToPersist);
     }
     
     /**
      * This is the persist method used by all entities;
      * @param object: the entity to be inserted. 
      */
-    public void persist(EntityClass object, EntityManager entityManager){
-       checkIfObjectHasCar(object, entityManager);
-       entityManager.persist(object);
+    public void persist(EntityClass object, EntityManager em){
+       checkIfObjectHasCar(object, em);
+       em.persist(object);
     }
 
     /**
@@ -201,7 +202,8 @@ public class Database_Manager extends Thread {
      * @param em 
      */
     private void insertCarIfNeeded(Car car, EntityManager em) {
-        if(em.find(Car.class, car.getUnitId()) == null){
+        if(em.find(car.getClass(), car.getUnitId()) == null){
+            System.out.println(car);
             em.persist(car);
         }
     }
@@ -211,15 +213,16 @@ public class Database_Manager extends Thread {
      * we are going to check if it has one first
      * If so, we are going to check if the car needs to be inserted into the database.
      */
-    private void checkIfObjectHasCar(EntityClass object, EntityManager entityManager) {
+    private void checkIfObjectHasCar(EntityClass object, EntityManager em) {
+        Car car = null;
         try {
-            
-            Car car = (Car) object.getCar();
+            car = (Car) object.getCar();
             if(car != null){
-            insertCarIfNeeded(car, entityManager);
+            insertCarIfNeeded(car, em);
             }
         } catch (Exception ex) {
             System.out.println(ex);
+            
         }
     }
     
@@ -227,12 +230,12 @@ public class Database_Manager extends Thread {
     public static void closeConnection() {
         try{
         running = false;
-        if(entityManager.getTransaction().isActive()){
-            entityManager.getTransaction().setRollbackOnly();
-        }
+        CSVInsertManager.stopAllThreads();
         
-        if(entityManager != null){
-            entityManager.getTransaction().rollback();
+        if(entityManager != null && entityManager.isOpen()){
+            if(entityManager.getTransaction().isActive()){
+              entityManager.getTransaction().rollback();
+            }
             entityManager.clear();
             entityManager.close();
         }
@@ -240,7 +243,7 @@ public class Database_Manager extends Thread {
             entityManagerFactory.close();
         }
         }catch(Exception ex){
-        
+            System.out.println(ex);
         }
        
     } 

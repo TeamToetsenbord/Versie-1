@@ -6,7 +6,7 @@
 package Readers;
 
 import DatabaseClasses.CSVInsertManager;
-import DatabaseClasses.CarStatusEvent;
+import DatabaseClasses.EntityClasses.CarStatusEvent;
 import DatabaseClasses.Database_Manager;
 import static Readers.CSVFileReader.getDateByString;
 import static Readers.CSVFileReader.reading;

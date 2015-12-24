@@ -5,9 +5,12 @@
  */
 package DatabaseClasses;
 
+import DatabaseClasses.EntityClasses.EntityClass;
 import Readers.CSVFileReader;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
@@ -15,7 +18,7 @@ import javax.persistence.Persistence;
  *
  * @author Elize
  */
-public class CSVInsertManager {
+public abstract class CSVInsertManager {
     
     /**
      * csvObjectsToPersist: 
@@ -26,42 +29,59 @@ public class CSVInsertManager {
     private static ArrayList<EntityClass> csvObjectsToPersist = new ArrayList();
     private static EntityManagerFactory emf = null;
     private static ArrayList<InsertThread> insertThreads = new ArrayList();
+    private static final int MAX_AMOUNT_OF_THREADS = 100;
+    private static final int AMOUNT_OF_OBJECTS_PER_THREAD = 100;
+    private static boolean inserting = false;
+    private static boolean stopped = false;
+
+    public static boolean isInserting() {
+        return inserting;
+    }
     
     public static void addObjectToPersistList(EntityClass entity){
+        inserting = true;
         csvObjectsToPersist.add(entity);
+        //createEntityManagerFactoryIfNeeded();
         createNewInsertThreadIfNeeded();
     }
     
-    private static void checkEntityManagerFactory(){
-        if(emf == null){
-            emf = Persistence.createEntityManagerFactory(Database_Manager.getPersistenceName());
+    
+    
+    private static void createEntityManagerFactoryIfNeeded(){
+        if(emf == null || !emf.isOpen() && !stopped){
+            emf = Persistence.createEntityManagerFactory("CSVInsertThread");
             UI.User_Interface.setInsertingLabelText("true");
         }
-        
-        if(getInsertThreadsSize() == 0 && csvObjectsToPersist.isEmpty()){
-          System.out.println("Closed");
+    }
+    
+    private static void closeEntityManagerFactoryIfNeeded(){
+         if(getInsertThreadsSize() == 0 && csvObjectsToPersist.isEmpty() && emf != null){
           emf.close();
-          UI.User_Interface.setInsertingLabelText("false");
+          inserting = false;
+          System.out.println("End: " + new Date());
         }
     }
     
     public static void createNewInsertThreadIfNeeded(){
-        if(!csvObjectsToPersist.isEmpty()){
-            if(csvObjectsToPersist.size() >= 100 || !CSVFileReader.isReading() ){
+        
+        createEntityManagerFactoryIfNeeded();
+        
+         if(!csvObjectsToPersist.isEmpty() && insertThreads.size() <= MAX_AMOUNT_OF_THREADS && !stopped){
+            if(csvObjectsToPersist.size() >= AMOUNT_OF_OBJECTS_PER_THREAD || !CSVFileReader.isReading() ){
                 List<EntityClass> newList = null;
                 if(!CSVFileReader.isReading()){
                  newList = new ArrayList(csvObjectsToPersist);
                 }else{
                  newList = new ArrayList(csvObjectsToPersist.subList(
-                         csvObjectsToPersist.size() - 100, 
+                         csvObjectsToPersist.size() - AMOUNT_OF_OBJECTS_PER_THREAD, 
                          csvObjectsToPersist.size()));
                 }
-                InsertThread is = new InsertThread(newList, emf);
+                EntityManager em = emf.createEntityManager();
+                InsertThread is = new InsertThread(newList, em);
                 insertThreads.add(is);
                 csvObjectsToPersist.removeAll(newList);
             }        
         }
-        checkEntityManagerFactory();
     }
 
     public static ArrayList<InsertThread> getInsertThreads() {
@@ -74,7 +94,20 @@ public class CSVInsertManager {
     
     public static void removeThread(InsertThread thread){
       insertThreads.remove(thread);
-      checkEntityManagerFactory();
+      if(!CSVFileReader.isReading()){
+      createNewInsertThreadIfNeeded();
+      }
+      closeEntityManagerFactoryIfNeeded();
+    }
+    
+    public static void stopAllThreads(){
+      inserting = false;
+      stopped = true;
+     while(!insertThreads.isEmpty()){
+         insertThreads.get(0).stopThread();
+     }   
+      emf.close();
+     
     }
     
 }

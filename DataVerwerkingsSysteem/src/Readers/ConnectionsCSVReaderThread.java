@@ -7,7 +7,7 @@ package Readers;
 
 import DatabaseClasses.CSVInsertManager;
 import DatabaseClasses.Database_Manager;
-import DatabaseClasses.OverallConnection;
+import DatabaseClasses.EntityClasses.OverallConnection;
 import static Readers.CSVFileReader.getDateByString;
 import static Readers.CSVFileReader.reading;
 import java.io.BufferedReader;

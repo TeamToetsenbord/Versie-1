@@ -3,7 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package DatabaseClasses;
+package DatabaseClasses.EntityClasses;
+
+import javax.persistence.EntityManager;
 
 /**
  *
@@ -33,7 +35,6 @@ public interface EntityClass {
      */
     EntityClass mergeWithObjectFromDatabase(EntityClass ec);
     
-    
-    
-    
+  //  EntityClass findObjectInDatabase(EntityManager em);
+       
 }

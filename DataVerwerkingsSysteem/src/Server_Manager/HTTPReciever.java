@@ -5,9 +5,9 @@
  */
 package Server_Manager;
 
-import DatabaseClasses.Car;
+import DatabaseClasses.EntityClasses.Car;
 import DatabaseClasses.Database_Manager;
-import DatabaseClasses.EntityClass;
+import DatabaseClasses.EntityClasses.EntityClass;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;

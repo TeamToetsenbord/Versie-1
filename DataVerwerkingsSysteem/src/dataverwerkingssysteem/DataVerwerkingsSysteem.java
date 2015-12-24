@@ -5,14 +5,27 @@
  */
 package dataverwerkingssysteem;
 
-import DatabaseClasses.Car;
+import DatabaseClasses.EntityClasses.Car;
+import DatabaseClasses.EntityClasses.CarPositionData;
 import DatabaseClasses.Database_Manager;
+import DatabaseClasses.EntityClasses.CarPositionDataPK;
+import DatabaseClasses.EntityClasses.EntityClass;
+import DatabaseClasses.InsertThread;
+import DatabaseClasses.EntityClasses.User;
 import Readers.PositionsCSVReaderThread;
 import Server_Manager.HTTPReciever;
 import UI.User_Interface;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 
 /**
  *
@@ -23,13 +36,11 @@ public class DataVerwerkingsSysteem {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ParseException {
         User_Interface ui = new User_Interface();
-        Database_Manager dbManager = new Database_Manager(ui);
-       
-           
-        //HTTPReciever h = new HTTPReciever();
-       
+        Database_Manager dbManager = new Database_Manager(ui); 
+
+        CarPositionData c = new CarPositionData("1235", null, "14785236");
     }
     
 }

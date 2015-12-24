@@ -5,10 +5,15 @@
  */
 package DatabaseClasses;
 
+import DatabaseClasses.EntityClasses.EntityClass;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceContext;
 
 /**
  *
@@ -21,12 +26,23 @@ public class InsertThread extends Database_Manager{
      */
     private List<EntityClass> objectsToPersist = null;
     private boolean running = false;
+    @PersistenceContext(unitName="CSVInsertThread") 
     private EntityManager em = null;
-    
-    
+        
     public InsertThread(List<EntityClass> objectsToPersistList, EntityManagerFactory emf){
         super();
         em = emf.createEntityManager();
+      
+        em.getTransaction().begin();
+        
+        this.objectsToPersist = objectsToPersistList;
+        running = true;
+        this.start();
+    }
+    
+    public InsertThread(List<EntityClass> objectsToPersistList, EntityManager em){
+        super();
+        this.em = em;
         em.getTransaction().begin();
         this.objectsToPersist = objectsToPersistList;
         running = true;
@@ -34,18 +50,25 @@ public class InsertThread extends Database_Manager{
     }
 
     @Override
-    public void run() {
+    public void run(){
         while(running){
         if(!objectsToPersist.isEmpty()){
         super.persistOrUpdateObject(objectsToPersist.get(0), em, objectsToPersist);
         }else{
-         em.getTransaction().commit();
+         stopThread();
+        }
+        }
+    }
+    
+    public void stopThread(){
+
+        if(em.getTransaction().isActive()){  
+          em.getTransaction().commit();
+        } 
          em.clear();
          em.close();
          running = false;
          CSVInsertManager.removeThread(this);
-        }
-        }
     }
     
 }

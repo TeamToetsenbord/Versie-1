@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package DatabaseClasses;
+package DatabaseClasses.EntityClasses;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -18,21 +18,23 @@ import javax.persistence.TemporalType;
  * @author School
  */
 @Embeddable
-public class CarStatusEventPK implements Serializable {
+public class TcpClientConnectionPK implements Serializable {
     @Basic(optional = false)
     @Column(name = "unit_id")
     private String unitId;
     @Basic(optional = false)
-    @Column(name = "event_date")
+    @Column(name = "date_time_start_minute")
     @Temporal(TemporalType.TIMESTAMP)
-    private Date eventDate;
+    private Date dateTimeInMinutes;
+    
 
-    public CarStatusEventPK() {
+    public TcpClientConnectionPK() {
     }
 
-    public CarStatusEventPK(String unitId, Date eventDate) {
+    public TcpClientConnectionPK(String unitId, Date time) {
         this.unitId = unitId;
-        this.eventDate = eventDate;
+        this.dateTimeInMinutes = time;
+        
     }
 
     public String getUnitId() {
@@ -43,41 +45,34 @@ public class CarStatusEventPK implements Serializable {
         this.unitId = unitId;
     }
 
-    public Date getEventDate() {
-        return eventDate;
-    }
-
-    public void setEventDate(Date eventDate) {
-        this.eventDate = eventDate;
-    }
-
+ 
     @Override
     public int hashCode() {
         int hash = 0;
         hash += (unitId != null ? unitId.hashCode() : 0);
-        hash += (eventDate != null ? eventDate.hashCode() : 0);
-        return hash;
+            return hash;
     }
 
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof CarStatusEventPK)) {
+        if (!(object instanceof TcpClientConnectionPK)) {
             return false;
         }
-        CarStatusEventPK other = (CarStatusEventPK) object;
+        TcpClientConnectionPK other = (TcpClientConnectionPK) object;
         if ((this.unitId == null && other.unitId != null) || (this.unitId != null && !this.unitId.equals(other.unitId))) {
             return false;
         }
-        if ((this.eventDate == null && other.eventDate != null) || (this.eventDate != null && !this.eventDate.equals(other.eventDate))) {
+        if ((this.dateTimeInMinutes == null && other.dateTimeInMinutes != null) || (this.dateTimeInMinutes != null && !this.dateTimeInMinutes.equals(other.dateTimeInMinutes))) {
             return false;
         }
+ 
         return true;
     }
 
     @Override
     public String toString() {
-        return "DatabaseClasses.CarStatusEventPK[ unitId=" + unitId + ", eventDate=" + eventDate + " ]";
+        return "DatabaseClasses.TcpClientConnectionPK[ unitId=" + unitId + "]";
     }
     
 }

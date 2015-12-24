@@ -7,9 +7,9 @@ package Readers;
 
 import DatabaseClasses.CSVInsertManager;
 import DatabaseClasses.Database_Manager;
-import DatabaseClasses.EntityClass;
-import DatabaseClasses.HsdpaConnection;
-import DatabaseClasses.TcpClientConnection;
+import DatabaseClasses.EntityClasses.EntityClass;
+import DatabaseClasses.EntityClasses.HsdpaConnection;
+import DatabaseClasses.EntityClasses.TcpClientConnection;
 import static Readers.CSVFileReader.calculateAverageByTicks;
 import static Readers.CSVFileReader.reading;
 import java.io.BufferedReader;

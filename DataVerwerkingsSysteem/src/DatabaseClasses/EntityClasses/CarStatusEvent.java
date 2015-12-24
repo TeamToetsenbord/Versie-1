@@ -3,14 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package DatabaseClasses;
+package DatabaseClasses.EntityClasses;
 
+import DatabaseClasses.EntityClasses.EntityClass;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.EntityManager;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
@@ -18,6 +20,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.TypedQuery;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.omg.CosNaming.NamingContextPackage.NotFound;
 
@@ -171,6 +174,24 @@ public class CarStatusEvent implements Serializable, EntityClass{
       return dbCSE;
 
       
+    }
+
+ 
+    public EntityClass findObjectInDatabase(EntityManager em) {
+        CarStatusEventPK pk = this.getCarStatusEventPK();
+        
+        String string = "SELECT c FROM CarStatusEvent c WHERE c.carStatusEventPK.unitId = :unitId"
+                + " AND c.carStatusEventPK.eventDate = :eventDate";
+    
+        TypedQuery<CarStatusEvent> query = em.createQuery(string, CarStatusEvent.class)
+                .setParameter("unitId", pk.getUnitId())
+                .setParameter("eventDate", pk.getEventDate());
+        if(!query.getResultList().isEmpty()){
+            return query.getSingleResult();
+        }else{
+            return null;
+        }
+        
     }
     
 }

@@ -6,7 +6,7 @@
 package Readers;
 
 import DatabaseClasses.CSVInsertManager;
-import DatabaseClasses.CarPositionData;
+import DatabaseClasses.EntityClasses.CarPositionData;
 import DatabaseClasses.Database_Manager;
 import static Readers.CSVFileReader.reading;
 import java.io.BufferedReader;
