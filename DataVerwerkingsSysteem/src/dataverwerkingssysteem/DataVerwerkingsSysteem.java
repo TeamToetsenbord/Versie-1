@@ -39,8 +39,7 @@ public class DataVerwerkingsSysteem {
     public static void main(String[] args) throws ParseException {
         User_Interface ui = new User_Interface();
         Database_Manager dbManager = new Database_Manager(ui); 
-
-        CarPositionData c = new CarPositionData("1235", null, "14785236");
+        System.out.println(Runtime.getRuntime().availableProcessors());
     }
     
 }

@@ -132,8 +132,8 @@ public class Database_Manager extends Thread {
     }
     
     protected void persistOrUpdateObject(EntityClass object, 
-            EntityManager em, 
-            List<EntityClass> objectsToPersist){
+                 EntityManager em, 
+                 List<EntityClass> objectsToPersist){
             
             if(!em.getTransaction().isActive()){
              em.getTransaction().begin();   
@@ -154,7 +154,13 @@ public class Database_Manager extends Thread {
         }finally{
             objectsToPersist.remove(object);
             if(em.getTransaction().isActive()){
+                try{
                 em.getTransaction().commit();
+                }catch(Exception ex){
+                    System.out.println("Exception: " + object);
+                }
+                    
+                    
             }
             
         }
@@ -203,7 +209,7 @@ public class Database_Manager extends Thread {
      */
     private void insertCarIfNeeded(Car car, EntityManager em) {
         if(em.find(car.getClass(), car.getUnitId()) == null){
-            System.out.println(car);
+           
             em.persist(car);
         }
     }
