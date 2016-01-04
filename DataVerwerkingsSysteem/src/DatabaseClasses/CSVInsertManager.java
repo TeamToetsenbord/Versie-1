@@ -29,7 +29,7 @@ public abstract class CSVInsertManager {
     private static ArrayList<EntityClass> csvObjectsToPersist = new ArrayList();
     private static EntityManagerFactory emf = null;
     private static ArrayList<InsertThread> insertThreads = new ArrayList();
-    private static final int MAX_AMOUNT_OF_THREADS = 50;
+    private static final int MAX_AMOUNT_OF_THREADS = 100;
     private static final int AMOUNT_OF_OBJECTS_PER_THREAD = 100;
     private static boolean inserting = false;
     private static boolean stopped = false;
@@ -41,7 +41,6 @@ public abstract class CSVInsertManager {
     public static void addObjectToPersistList(EntityClass entity){
         inserting = true;
         csvObjectsToPersist.add(entity);
-        //createEntityManagerFactoryIfNeeded();
         createNewInsertThreadIfNeeded();
     }
     
@@ -104,12 +103,25 @@ public abstract class CSVInsertManager {
     }
     
     public static void stopAllThreads(){
+        
       inserting = false;
       stopped = true;
-     while(!insertThreads.isEmpty()){
-         insertThreads.get(0).stopThread();
-     }   
-      emf.close();
+        try{
+          while(!insertThreads.isEmpty() && insertThreads != null && insertThreads.size() != 0){
+                 insertThreads.get(0).stopThread();
+          }   
+        }catch(Exception ex){
+            System.out.println(ex);
+        }finally{
+            if(emf != null && emf.isOpen()){
+            emf.close();
+        }
+      }
+     
+      
     }
     
+     public static boolean isInsertThreadsMaxSize(){
+        return (insertThreads.size() >= MAX_AMOUNT_OF_THREADS);
+    }
 }

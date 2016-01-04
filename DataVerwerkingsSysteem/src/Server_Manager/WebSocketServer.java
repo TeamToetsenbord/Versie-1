@@ -22,7 +22,7 @@ import javax.websocket.server.ServerEndpoint;
  */
 
 
-@ServerEndpoint("/actions")
+@ServerEndpoint("/insert")
 public class WebSocketServer {
     
     private static Set<Session> peers = Collections.synchronizedSet(new HashSet<Session>());
@@ -47,7 +47,6 @@ public class WebSocketServer {
     public void handleMessage(String message, Session session) {
         System.out.println("Message: " + message);
     }
-    
     
     
 }

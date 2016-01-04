@@ -140,7 +140,8 @@ public class Database_Manager extends Thread {
             }
             try{
             EntityClass objectInDatabaseFound = 
-                    em.find(object.getClass(),  entityManagerFactory.getPersistenceUnitUtil().getIdentifier(object));
+                    em.find(object.getClass(),  
+                            em.getEntityManagerFactory().getPersistenceUnitUtil().getIdentifier(object));
             if(objectInDatabaseFound == null){
                 persist(object, em);
             }else if(objectInDatabaseFound != null && !objectInDatabaseFound.equals(object)){
@@ -209,7 +210,6 @@ public class Database_Manager extends Thread {
      */
     private void insertCarIfNeeded(Car car, EntityManager em) {
         if(em.find(car.getClass(), car.getUnitId()) == null){
-           
             em.persist(car);
         }
     }
@@ -240,16 +240,18 @@ public class Database_Manager extends Thread {
         
         if(entityManager != null && entityManager.isOpen()){
             if(entityManager.getTransaction().isActive()){
-              entityManager.getTransaction().rollback();
+              entityManager.getTransaction().commit();
             }
             entityManager.clear();
             entityManager.close();
         }
-        if(entityManagerFactory.isOpen()){
-            entityManagerFactory.close();
-        }
+        
         }catch(Exception ex){
             System.out.println(ex);
+        }finally{
+            if(entityManagerFactory != null && entityManagerFactory.isOpen()){
+            entityManagerFactory.close();
+            }
         }
        
     } 

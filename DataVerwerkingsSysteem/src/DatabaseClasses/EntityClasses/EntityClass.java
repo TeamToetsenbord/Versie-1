@@ -35,6 +35,5 @@ public interface EntityClass {
      */
     EntityClass mergeWithObjectFromDatabase(EntityClass ec);
     
-  //  EntityClass findObjectInDatabase(EntityManager em);
        
 }

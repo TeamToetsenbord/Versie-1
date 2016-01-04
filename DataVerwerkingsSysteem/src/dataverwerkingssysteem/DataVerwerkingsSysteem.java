@@ -37,9 +37,10 @@ public class DataVerwerkingsSysteem {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws ParseException {
+        HTTPReciever httpServer = new HTTPReciever();
         User_Interface ui = new User_Interface();
         Database_Manager dbManager = new Database_Manager(ui); 
-        System.out.println(Runtime.getRuntime().availableProcessors());
+        
     }
     
 }

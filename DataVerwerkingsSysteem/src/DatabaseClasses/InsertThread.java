@@ -43,7 +43,6 @@ public class InsertThread extends Database_Manager{
     public InsertThread(List<EntityClass> objectsToPersistList, EntityManager em){
         super();
         this.em = em;
-        em.getTransaction().begin();
         this.objectsToPersist = objectsToPersistList;
         running = true;
         this.start();
@@ -52,8 +51,9 @@ public class InsertThread extends Database_Manager{
     @Override
     public void run(){
         while(running){
-        if(!objectsToPersist.isEmpty()){
+        if(!objectsToPersist.isEmpty() && objectsToPersist.size() != 0){
         super.persistOrUpdateObject(objectsToPersist.get(0), em, objectsToPersist);
+
         }else{
          stopThread();
         }
@@ -61,13 +61,14 @@ public class InsertThread extends Database_Manager{
     }
     
     public void stopThread(){
-
+        running = false;
+        if(em != null && em.isOpen()){
         if(em.getTransaction().isActive()){  
           em.getTransaction().commit();
         } 
-         em.clear();
          em.close();
-         running = false;
+        }
+         
          CSVInsertManager.removeThread(this);
     }
     
