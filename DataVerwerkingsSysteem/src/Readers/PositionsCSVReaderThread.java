@@ -55,7 +55,7 @@ public class PositionsCSVReaderThread extends CSVFileReader{
         BufferedReader br = null;
         String line = "";
         String cvsSplitBy = ";"; //splits file for every ;
-        int count = 0;
+        
         try{
             br = new BufferedReader(new FileReader(path));
             String firstline = br.readLine();
@@ -96,11 +96,8 @@ public class PositionsCSVReaderThread extends CSVFileReader{
                 CarPositionData cpd = new CarPositionData(unitId, dateFormatted,
                         connectionType, latitude, longitude, Integer.parseInt(speed), Integer.parseInt(course), Integer.parseInt(hdop) );
                 
-                while(CSVInsertManager.isInsertThreadsMaxSize()){
-                        Thread.sleep(1000);
-                }
                 CSVInsertManager.addObjectToPersistList(cpd);
-                count++;
+                
             }
         }catch (Exception ex){   
             System.out.println(ex);
@@ -114,7 +111,7 @@ public class PositionsCSVReaderThread extends CSVFileReader{
                 catch (Exception e){
                 }
             }
-            System.out.println("Reading positions.csv finished: " + count + " objects.");
+            System.out.println("Reading positions.csv finished");
             CSVFileReader.setReading(false);
         }
     }
