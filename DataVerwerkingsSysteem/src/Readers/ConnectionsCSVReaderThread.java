@@ -74,8 +74,7 @@ public class ConnectionsCSVReaderThread extends CSVFileReader{
                 Date dateFormatted = getDateByString(dateString);   
  
                 OverallConnection overallConnection = new OverallConnection(dateFormatted, unitId, connected);
-               //Database_Manager.addObjectToPersistList(overallConnection);
-                 CSVInsertManager.addObjectToPersistList(overallConnection);
+                CSVInsertManager.addObjectToPersistList(overallConnection);
             }
         }
         catch (Exception ex){    

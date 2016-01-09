@@ -74,7 +74,7 @@ public class EventsCSVReaderThread extends CSVFileReader{
                 Date dateFormatted = getDateByString(dateString); 
  
                 CarStatusEvent carStatusEvent = new CarStatusEvent(unitId, dateFormatted, port, value );
-                //Database_Manager.addObjectToPersistList(carStatusEvent);
+                
                 CSVInsertManager.addObjectToPersistList(carStatusEvent);
             }
         }

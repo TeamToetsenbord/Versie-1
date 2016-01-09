@@ -89,7 +89,6 @@ public class PositionsCSVReaderThread extends CSVFileReader{
                 float fx = Float.parseFloat(rdx);
                 float fy = Float.parseFloat(rdy);
                 
-                
                 double[] longAndLatArray = CSVFileReader.calculateLongAndLatFromRxAndRy((long)fx, (long)fy);
                 double longitude = longAndLatArray[0]; 
                 double latitude = longAndLatArray[1];

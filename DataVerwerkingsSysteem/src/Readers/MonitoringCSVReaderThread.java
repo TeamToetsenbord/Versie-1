@@ -80,7 +80,7 @@ public class MonitoringCSVReaderThread extends CSVFileReader {
                 catch (Exception e){
                     e.printStackTrace();
                 }
-                System.out.println("reading finished");
+                System.out.println("Reading Monitoring.csv finished");
             }
             CSVFileReader.setReading(false);
         }
@@ -136,7 +136,6 @@ public class MonitoringCSVReaderThread extends CSVFileReader {
                 }
                 
                 if(object != null){
-                    //Database_Manager.addObjectToPersistList(object);
                     CSVInsertManager.addObjectToPersistList(object);
                 }
                 
