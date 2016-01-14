@@ -13,6 +13,7 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.persistence.PersistenceContext;
 
 /**
  *
@@ -27,6 +28,7 @@ public abstract class CSVInsertManager {
      * but they will be handled in the the persistOrUpdateObject function.
      */
     private static ArrayList<EntityClass> csvObjectsToPersist = new ArrayList();
+    
     private static EntityManagerFactory emf = null;
     private static ArrayList<InsertThread> insertThreads = new ArrayList();
     private static final int MAX_AMOUNT_OF_THREADS = 100;
@@ -39,11 +41,11 @@ public abstract class CSVInsertManager {
     }
     
     public static void addObjectToPersistList(EntityClass entity){
+        System.out.println("New Object: " + entity);
         inserting = true;
         csvObjectsToPersist.add(entity);
         createNewInsertThreadIfNeeded();
     }
-    
     
     
     private static void createEntityManagerFactoryIfNeeded(){
@@ -118,7 +120,6 @@ public abstract class CSVInsertManager {
         }
       }
      
-      
     }
     
      public static boolean isInsertThreadsMaxSize(){

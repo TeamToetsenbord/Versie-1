@@ -26,7 +26,6 @@ public class InsertThread extends Database_Manager{
      */
     private List<EntityClass> objectsToPersist = null;
     private boolean running = false;
-    @PersistenceContext(unitName="CSVInsertThread") 
     private EntityManager em = null;
         
     public InsertThread(List<EntityClass> objectsToPersistList, EntityManagerFactory emf){

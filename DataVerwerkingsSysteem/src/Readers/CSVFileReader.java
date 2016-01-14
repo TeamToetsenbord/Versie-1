@@ -29,7 +29,7 @@ import java.util.logging.Logger;
  *
  * @author Ronald & Elize
  */
-public class CSVFileReader extends Thread{
+public abstract class CSVFileReader extends Thread{
     
     private static final int TICKS_PER_SECOND = 60;
     public static boolean reading = false;

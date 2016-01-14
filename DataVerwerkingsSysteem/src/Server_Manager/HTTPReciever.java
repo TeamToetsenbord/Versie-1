@@ -50,7 +50,7 @@ public class HTTPReciever extends Thread {
     //Method to recieve all messages from outside clients.
     private void recieveAndInsertObject(){
                
-    int port = 8000;
+    int port = 8883;
     
     InputStream is = null;
     Socket s = null;
@@ -67,17 +67,11 @@ public class HTTPReciever extends Thread {
             String readString = "";
             int readChar = 0;
             while((readChar = is.read()) != -1){
-            readString += (char) readChar;
+                System.out.println( (char) readChar);
+                readString += (char) readChar;
             }
-            System.out.println("Read String:" + readString);
+            
         
-          //Read the objects in the inputstream, I don't think we are going to use this.
-          //Maybe for inserting live data?
-         
-//        ObjectInputStream objectInput = new ObjectInputStream(is);  
-//        String message1 = (String) objectInput.readObject();
-//        Car message2 = (Car) objectInput.readObject();
-//        System.out.println(message1 + "/n" +  message2.toString());
               
         }catch(Exception e){System.out.println("Exception: " + e);}
         finally{

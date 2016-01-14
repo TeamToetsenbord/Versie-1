@@ -12,6 +12,7 @@ import DatabaseClasses.EntityClasses.CarPositionDataPK;
 import DatabaseClasses.EntityClasses.EntityClass;
 import DatabaseClasses.InsertThread;
 import DatabaseClasses.EntityClasses.User;
+import InputStreams.MqttReciever;
 import Readers.PositionsCSVReaderThread;
 import Server_Manager.HTTPReciever;
 import UI.User_Interface;
@@ -37,9 +38,10 @@ public class DataVerwerkingsSysteem {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws ParseException {
-        HTTPReciever httpServer = new HTTPReciever();
+        
         User_Interface ui = new User_Interface();
         Database_Manager dbManager = new Database_Manager(ui); 
+        MqttReciever m = new MqttReciever();
         
     }
     

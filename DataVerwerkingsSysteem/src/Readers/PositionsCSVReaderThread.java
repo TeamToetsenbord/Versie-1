@@ -114,4 +114,5 @@ public class PositionsCSVReaderThread extends CSVFileReader{
             CSVFileReader.setReading(false);
         }
     }
+    
 }

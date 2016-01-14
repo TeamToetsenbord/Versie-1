@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.swing.JOptionPane;
 
@@ -40,9 +41,8 @@ public class Database_Manager extends Thread {
     private static ArrayList<EntityClass> csvObjectsToPersist = new ArrayList();
     //The amount of objects that will be processed per transaction.
     private static final int OBJECTS_PER_TRANSACTION = 100; 
-    
     private static EntityManager entityManager = null;
-    private static final String persistenceName = "DataProccesingSystemPU";
+    private static final String PERSISTENCE_UNIT_NAME = "DataProccesingSystemPU";
     private int count = OBJECTS_PER_TRANSACTION;
     private User_Interface ui = null;
     private static boolean running = false;
@@ -51,7 +51,7 @@ public class Database_Manager extends Thread {
      * Since it is static, this connection should last as long as the program is running.
      */    
     private static EntityManagerFactory entityManagerFactory
-              = Persistence.createEntityManagerFactory(persistenceName);
+              = Persistence.createEntityManagerFactory(PERSISTENCE_UNIT_NAME);
       
     public Database_Manager(User_Interface ui){
         this.ui = ui;
@@ -65,7 +65,7 @@ public class Database_Manager extends Thread {
     }
     
     public static String getPersistenceName() {
-        return persistenceName; 
+        return PERSISTENCE_UNIT_NAME; 
     }
     
     public static EntityManagerFactory getEntityManagerFactory() {
