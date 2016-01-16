@@ -23,7 +23,7 @@ import javax.websocket.server.ServerEndpoint;
 
 
 @ServerEndpoint("/insert")
-public class WebSocketServer {
+public class WebServerEndPoint {
     
     private static Set<Session> peers = Collections.synchronizedSet(new HashSet<Session>());
     

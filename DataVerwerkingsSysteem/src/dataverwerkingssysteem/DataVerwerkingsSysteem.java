@@ -13,6 +13,7 @@ import DatabaseClasses.EntityClasses.EntityClass;
 import DatabaseClasses.InsertThread;
 import DatabaseClasses.EntityClasses.User;
 import InputStreams.MqttReciever;
+import Readers.CSVFileReader;
 import Readers.PositionsCSVReaderThread;
 import Server_Manager.HTTPReciever;
 import UI.User_Interface;
@@ -41,7 +42,9 @@ public class DataVerwerkingsSysteem {
         
         User_Interface ui = new User_Interface();
         Database_Manager dbManager = new Database_Manager(ui); 
-        MqttReciever m = new MqttReciever();
+        //MqttReciever m = new MqttReciever();
+        CSVFileReader csvFileReader = new CSVFileReader();
+        
         
     }
     

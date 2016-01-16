@@ -54,7 +54,6 @@ public class EventsCSVReaderThread extends CSVFileReader{
         }
         BufferedReader br = null;
         String line = "";
-        String cvsSplitBy = ";"; //splits file bij elke ;
         try{
             
             br = new BufferedReader(new FileReader(path));
@@ -65,7 +64,7 @@ public class EventsCSVReaderThread extends CSVFileReader{
             return;
             }
             while ((line = br.readLine()) != null){
-                String [] lines = line.split(cvsSplitBy);
+                String [] lines = line.split(CSV_SPLIT_BY);
                 String dateString = lines[0];
                 String unitId = lines[1];
                 String port = lines [2];
@@ -92,5 +91,19 @@ public class EventsCSVReaderThread extends CSVFileReader{
              System.out.println("Reading events.csv finished");
              CSVFileReader.setReading(false);
         }   
+    }
+    
+    public static void readAndInsertLine(String[] lines){
+                String dateString = lines[0];
+                String unitId = lines[1];
+                String port = lines [2];
+                String value = lines [3];
+                
+                Date dateFormatted = getDateByString(dateString); 
+ 
+                CarStatusEvent carStatusEvent = new CarStatusEvent(unitId, dateFormatted, port, value );
+                
+                CSVInsertManager.addObjectToPersistList(carStatusEvent);
+    
     }
 }

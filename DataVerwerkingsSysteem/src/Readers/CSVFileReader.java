@@ -15,8 +15,15 @@ import DatabaseClasses.EntityClasses.OverallConnection;
 import DatabaseClasses.EntityClasses.TcpClientConnection;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -24,15 +31,19 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  *
  * @author Ronald & Elize
  */
-public abstract class CSVFileReader extends Thread{
+public class CSVFileReader extends Thread{
     
     private static final int TICKS_PER_SECOND = 60;
     public static boolean reading = false;
+    ServerSocket serverSocket; 
+    static final String CSV_SPLIT_BY = ";"; //splits file bij elke ;
 
     public static boolean isReading() {
         return reading;
@@ -45,10 +56,66 @@ public abstract class CSVFileReader extends Thread{
             CSVInsertManager.createNewInsertThreadIfNeeded();
         }
     }
+    private void createServerSocket(){
+        if(serverSocket == null || serverSocket.isClosed()){
+            try {
+                   InetAddress address = InetAddress.getByName("localhost");
+                   int port = 50;
+                   int maxConnections = 1000;
+                   serverSocket = new ServerSocket(port, maxConnections, address);
+               } catch (UnknownHostException ex) {
+                   System.out.println(ex);
+               } catch (IOException ex) {
+                   System.out.println(ex);
+            }
+        }
     
+    }
     public CSVFileReader(){
+        createServerSocket();
+        this.start();
+    }
+    
+    private void getMessagesFromWebApp(){
+        String inputMessage = "";
+        try {
+            Socket socket = serverSocket.accept();
+             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+             
+             String inputLine = in.readLine();
+             System.out.println("inputline: " + inputLine);
+             if(inputLine.equals("start")){
+               CSVFileReader.setReading(true);
+               }else if(inputLine.equals("end")){
+                   CSVFileReader.setReading(false);
+               }else if (inputLine.startsWith("{")){
+                    inputMessage = inputLine;
+                   while ((inputLine = in.readLine()) != null) {
+                    inputMessage.concat(inputLine);
+                    if(inputLine.endsWith("}")){
+                      break;
+                    }
+                }   
+                    JSONObject json = new JSONObject(inputMessage);
+                    readLineByType(json.getString("type"), json.getString("line"));
+               }
+               
+               
+             
+        } catch (IOException ex) {
+            System.out.println(ex);
+        } catch (JSONException ex) {
+            System.out.println(ex + inputMessage);
+        }
         
     }
+    @Override 
+    public void run(){
+       while(true){
+       getMessagesFromWebApp();
+       }
+    }
+    
     
     protected static Date getDateByString(String string){
     
@@ -107,6 +174,25 @@ public abstract class CSVFileReader extends Thread{
         return latAndLongArray;
     }
     
+    private static void readLineByType(String type, String line){
+        
+        String[] lines = line.split(CSV_SPLIT_BY);
+         switch(type){
+            case "Positions":
+               PositionsCSVReaderThread.readAndInsertLine(lines);
+               break;
+            case "Events":
+               EventsCSVReaderThread.readAndInsertLine(lines);
+                break;
+            case "Monitoring":
+                MonitoringCSVReaderThread.getMonitoringObjectFound(lines);
+                break;
+            case "Connections":
+                ConnectionsCSVReaderThread.readAndInsertLine(lines);
+                break;
+            
+        }
+    }
     
     public static void readFileByType(String type, String path){
         System.out.println("Start: " + new Date());

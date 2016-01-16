@@ -21,6 +21,8 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 /**
  *
  * @author Elize
@@ -68,6 +70,11 @@ public class MqttReciever extends Thread implements MqttCallback {
         } catch (MqttException e) {
             e.printStackTrace();
             System.out.println("Connection failed." + e.getMessage());
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(MqttReciever.class.getName()).log(Level.SEVERE, null, ex);
+            }
 
         }
     }

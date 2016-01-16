@@ -54,7 +54,6 @@ public class PositionsCSVReaderThread extends CSVFileReader{
         }
         BufferedReader br = null;
         String line = "";
-        String cvsSplitBy = ";"; //splits file for every ;
         
         try{
             br = new BufferedReader(new FileReader(path));
@@ -65,7 +64,28 @@ public class PositionsCSVReaderThread extends CSVFileReader{
             }
             
             while ((line = br.readLine()) != null){
-                String [] lines = line.split(cvsSplitBy);
+                String [] lines = line.split(CSV_SPLIT_BY);
+                readAndInsertLine(lines);
+                
+            }
+        }catch (Exception ex){   
+            System.out.println(ex);
+            }
+         finally{
+           
+            if(br != null){
+                try{
+                    br.close();
+                }
+                catch (Exception e){
+                }
+            }
+            System.out.println("Reading positions.csv finished");
+            CSVFileReader.setReading(false);
+        }
+    }
+    
+    public static void readAndInsertLine(String[] lines){
                 String dateString = lines[0];
                 Date dateFormatted = CSVFileReader.getDateByString(dateString);
                 String unitId = lines[1];
@@ -96,23 +116,5 @@ public class PositionsCSVReaderThread extends CSVFileReader{
                         connectionType, latitude, longitude, Integer.parseInt(speed), Integer.parseInt(course), Integer.parseInt(hdop) );
                 
                 CSVInsertManager.addObjectToPersistList(cpd);
-                
-            }
-        }catch (Exception ex){   
-            System.out.println(ex);
-            }
-         finally{
-           
-            if(br != null){
-                try{
-                    br.close();
-                }
-                catch (Exception e){
-                }
-            }
-            System.out.println("Reading positions.csv finished");
-            CSVFileReader.setReading(false);
-        }
     }
-    
 }

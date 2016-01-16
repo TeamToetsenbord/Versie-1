@@ -55,7 +55,7 @@ public class ConnectionsCSVReaderThread extends CSVFileReader{
             
         BufferedReader br = null;
         String line = "";
-        String cvsSplitBy = ";"; //splits file bij elke ;
+        
         try{
             br = new BufferedReader(new FileReader(path));
             String firstline = br.readLine();
@@ -64,17 +64,9 @@ public class ConnectionsCSVReaderThread extends CSVFileReader{
             return;
             }
             while ((line = br.readLine()) != null){
-                String [] lines = line.split(cvsSplitBy);
-                String dateString = lines[0];
-                String unitId = lines[1];
-                String port = lines [2];
-                String value = lines [3];
-                boolean connected = (Integer.parseInt(value) != 0);
-                
-                Date dateFormatted = getDateByString(dateString);   
- 
-                OverallConnection overallConnection = new OverallConnection(dateFormatted, unitId, connected);
-                CSVInsertManager.addObjectToPersistList(overallConnection);
+                String [] lines = line.split(CSV_SPLIT_BY);
+                readAndInsertLine(lines);
+               
             }
         }
         catch (Exception ex){    
@@ -90,5 +82,20 @@ public class ConnectionsCSVReaderThread extends CSVFileReader{
             }
             CSVFileReader.setReading(false);
         }   
+    }
+    
+    
+    public static void readAndInsertLine(String[] lines){
+                String dateString = lines[0];
+                String unitId = lines[1];
+                String port = lines [2];
+                String value = lines [3];
+                boolean connected = (Integer.parseInt(value) != 0);
+                
+                Date dateFormatted = getDateByString(dateString);   
+ 
+                OverallConnection overallConnection = new OverallConnection(dateFormatted, unitId, connected);
+                CSVInsertManager.addObjectToPersistList(overallConnection);
+        
     }
 }

@@ -54,7 +54,6 @@ public class MonitoringCSVReaderThread extends CSVFileReader {
        
         BufferedReader br = null;
         String line = "";
-        String cvsSplitBy = ";"; //splits file bij elke ;
         try{
             br = new BufferedReader(new FileReader(path));
             String firstline = br.readLine();
@@ -64,7 +63,7 @@ public class MonitoringCSVReaderThread extends CSVFileReader {
             }
 
             while ((line = br.readLine()) != null){
-                String [] lines = line.split(cvsSplitBy);              
+                String [] lines = line.split(CSV_SPLIT_BY);              
                 getMonitoringObjectFound(lines);
 
             }
@@ -86,8 +85,10 @@ public class MonitoringCSVReaderThread extends CSVFileReader {
         }
         
     }
-          
-    private void getMonitoringObjectFound(String[] lines) {
+  
+        
+     
+    public static void getMonitoringObjectFound(String[] lines) {
                         
                 String unitId = lines[0];
                 String beginTimeString = lines[1];
