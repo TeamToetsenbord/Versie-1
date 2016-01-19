@@ -12,7 +12,10 @@ import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.websocket.OnClose;
 import javax.websocket.OnMessage;
+import javax.websocket.OnOpen;
+import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
 /**
@@ -25,15 +28,17 @@ public class CSVUploadFileEndpoint {
 
     @OnMessage
     public String onMessage(String message) {
-        if(message.equals("start")){
-            createNewSocket();
-        }else if(message.equals("end")){
-            closeSocket();
-        }
-        sendLineToInsertApp(message);
-        
+//        if(message.equals("start")){
+//            createNewSocket();
+//        }else if(message.equals("end")){
+//            closeSocket();
+//        }
+//        sendLineToInsertApp(message);
         return message;
     }
+    
+    
+    
 
     private void sendLineToInsertApp(String message) {
         try {           
@@ -48,6 +53,7 @@ public class CSVUploadFileEndpoint {
         
     }
 
+    @OnOpen
     private void createNewSocket() {
         
         try {
@@ -57,13 +63,14 @@ public class CSVUploadFileEndpoint {
             Socket socket = new Socket(address, port);
             }
         } catch (UnknownHostException ex) {
-            Logger.getLogger(CSVUploadFileEndpoint.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println(ex);
         } catch (IOException ex) {
-            Logger.getLogger(CSVUploadFileEndpoint.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println(ex);
         }
            
     }
 
+    @OnClose
     private void closeSocket() {
         try {
             if(!socket.isClosed() && !socket.isOutputShutdown()){
@@ -72,7 +79,7 @@ public class CSVUploadFileEndpoint {
             socket.close();
             }
         } catch (IOException ex) {
-            Logger.getLogger(CSVUploadFileEndpoint.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println(ex);
         }
     }
     

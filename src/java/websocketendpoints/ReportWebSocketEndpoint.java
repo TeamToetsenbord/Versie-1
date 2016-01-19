@@ -8,6 +8,7 @@ package websocketendpoints;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.websocket.OnMessage;
+import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,6 +22,7 @@ public class ReportWebSocketEndpoint {
 
     @OnMessage
     public String onMessage(String message) {
+        
         try {
             JSONObject json = new JSONObject(message);
             String type = json.getString("reportType");

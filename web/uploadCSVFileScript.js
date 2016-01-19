@@ -22,14 +22,16 @@ function onError(event){
     console.log("Error: " + event.data);
 }
 
-function sendLine(){
-    csvFileWebSocket.send("start");
-    var json = '{' +
-            '"type":"Connections", '
-            + '"line":"2015-03-10 00:47:24;357566040024266;Connection;1"'
-            + '}';
-    csvFileWebSocket.send(json);
-    csvFileWebSocket.send("end");
+//Call when a new file is uploaded.
+function sendNewCSVFileMessage(path, reportType){
+    
+    var json = {};
+    json.messageType = "newCSVFile"
+    json.reportType = reportType;
+    json.path = path;
+    console.log(json);
+    //csvFileWebSocket.send(json);
+    //csvFileWebSocket.send("end");
 }
 
 

@@ -11,6 +11,7 @@ window.onload = initReportRequestSocket;
  * @returns {undefined}
  */
 function initReportRequestSocket(){
+    console.log("creating..");
     reportWebSocket = new WebSocket("ws://"+ document.location.host+"/CityGisWebApplication/reportEndpoint");
     reportWebSocket.onmessage = onMessage;
 }
@@ -28,10 +29,9 @@ function sendReportRequest(reportType, unitId){
     if(unitId === undefined){
         unitId = null;
     }
-    var jsonRequest = ' { ' 
-            + '"reportType":"' + reportType + '", ' 
-            + '"unitId":"' + unitId + '"}';
-  
+    var jsonRequest = {};
+    jsonRequest.reportType = reportType;
+    jsonRequest.unitId = unitId; 
     reportWebSocket.send(jsonRequest);
 } 
 /**
