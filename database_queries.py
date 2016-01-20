@@ -1,11 +1,69 @@
 import psycopg2
 import json
+import os
+import sys
 import reportlab
 import time
 
 # installed: psycopg2
-# reposrtlab with easy_install reportlab, then downloaded c++ thingy from https://www.microsoft.com/en-us/download/details.aspx?id=44266
+# reportlab with easy_install reportlab, then downloaded c++ thingy from https://www.microsoft.com/en-us/download/details.aspx?id=44266, VCForPython27
 
+# ik krijg type rapport, naam, directory, unit_id (als dat nodig is)	
+# TODO: deze parameters implementeren ^^
+# TODO: emails doen, gewoon alleen de data er in
+
+# Creates the variables that will be assigned values based on the arguments used when running the script
+filename = ""
+directory = ""
+report_type = ""
+unit_id = ""
+
+# Assigns the values of the arguments used when running the script to the right variables
+# TODO: Change these to a better method?
+def main(argv):
+	global filename
+	global directory
+	global report_type
+	global unit_id
+
+	if  len(sys.argv) == 5:
+		filename_arg, directory_arg, report_type_arg, unit_id_arg = argv
+		unit_id = unit_id_arg
+	elif len(sys.argv) == 4:
+		filename_arg, directory_arg, report_type_arg = argv
+		
+	filename = filename_arg
+	directory = directory_arg
+	report_type = report_type_arg
+	
+	print 'Number of arguments:', len(sys.argv), 'arguments.'
+	print 'Argument List:', str(sys.argv)
+	print """Does this work? %s""" % filename
+	
+
+def pick_report():
+	print "Picking report... " + report_type
+	
+	if report_type == "authority":
+		print "Create authority report"
+	elif report_type == "citygis":
+		print "Create citygis report"
+	elif report_type == "connections":
+		print "Create connections report"
+	elif report_type == "controlroom":
+		if unit_id == "":		# TODO: Send a query to check if the unit_id exists? (SELECT * FROM cars)
+			sys.exit("You didn't provide a unit_id")
+		else:
+			print "Create control room report"
+	else:
+		sys.exit("You didn't provide any arguments. You should provide a filename, directory, report_type and optionally a unit_id")
+
+		# TODO: actually create all the reports
+	
+if __name__ == "__main__":
+	main(sys.argv[1:])
+	pick_report()
+	
 # This sets up a connection to the database
 connection = psycopg2.connect(database="CityGis Data", user="postgres", password="toetsenbord", host="145.24.222.225", port="8000")
 print "Opened database successfully"
@@ -13,7 +71,7 @@ print "Opened database successfully"
 # This creates a cursor with which to look through the database with
 cur = connection.cursor()
 
-# These are the function used to
+# These are the function used to retrieve data from the database and convert it to usable dictionaries
 def get_authority_report_data():
 	print "Getting authority report data..."
 	
@@ -35,7 +93,7 @@ def get_authority_report_data():
 		GROUP BY latitude, longitude 
 		Order by amount_of_visits DESC
 		LIMIT 5) as moststopped""")
-	rows2 = cur.fetchmany(5)	#TODO fetchall
+	rows2 = cur.fetchall()
 	for row in rows2:
 		for counter, json_dict in enumerate(row, 1):
 			if counter%2 == 0:
@@ -80,7 +138,7 @@ def get_CityGis_report_data():
 		cs_data.unit_id = gps_data.unit_id
 		WHERE  cs_speed != gps_speed OR cs_course != gps_course OR cs_location != gps_location
 		ORDER BY (cs_speed != gps_speed AND cs_course != gps_course AND cs_location != gps_location) DESC ) AS city_gis_data""")
-	rows2 = cur.fetchmany(5)	#TODO fetchall
+	rows2 = cur.fetchall()
 	for row in rows2:
 		for json_dict in row:
 			data_row = {}
@@ -123,7 +181,7 @@ def get_overall_connections_report_data():
 			GROUP BY latitude, longitude
 			ORDER BY count(*) asc
 			LIMIT 10 ) worst_overall_connection_locations_table ) as worst_overall_connection_locations""")
-	rows2 = cur.fetchmany(5)	#TODO fetchall
+	rows2 = cur.fetchall()
 	for row in rows2:
 		for counter, json_dict in enumerate(row, 1):
 			if counter%2 == 0:
@@ -178,7 +236,7 @@ def get_hsdpa_connections_report_data():
 		GROUP BY latitude, longitude
 		ORDER BY COUNT(*) DESC
 		LIMIT 10) worst_hsdpa_connection_locations_table) as worst_hsdpa_connection_locations""")
-	rows2 = cur.fetchmany(5)	#TODO fetchall
+	rows2 = cur.fetchall()
 	for row in rows2:
 		for counter, json_dict in enumerate(row, 1):
 			if counter%2 == 0:
@@ -228,7 +286,7 @@ def get_tcp_connections_report_data():
 		GROUP BY latitude, longitude
 		ORDER BY COUNT(*) DESC
 		LIMIT 10) worst_tcp_connections_table) as worst_tcp_connections""")
-	rows2 = cur.fetchmany(5)	#TODO fetchall
+	rows2 = cur.fetchall()
 	for row in rows2:
 		for counter, json_dict in enumerate(row, 1):
 			if counter%2 == 0:
@@ -255,7 +313,7 @@ def get_highest_speed_control_room_data():
 		GROUP BY unit_id, longitude, latitude, speed
 		ORDER BY speed DESC
 	) t LIMIT 10;""")
-	rows2 = cur.fetchmany(5)	#TODO fetchall
+	rows2 = cur.fetchall()
 	for row in rows2:
 		for json_dict in row:
 			data_row = {}
@@ -278,7 +336,7 @@ def get_least_visited_control_room_data():
 	GROUP BY latitude, longitude 
 	Order by amount_of_visits ASC
 	LIMIT 10) as leastvisited;""")
-	rows2 = cur.fetchmany(5)	#TODO fetchall
+	rows2 = cur.fetchall()
 	for row in rows2:
 		for json_dict in row:
 			data_row = {}
@@ -300,7 +358,7 @@ def get_most_common_driving_times_control_room_data():
 		-- AND unit_id = MEEGEGEVEN UNIT_ID, MOET DE GEBRUIKER ZELF AANGEVEN
 		GROUP BY hour_
 		ORDER BY Times_appeared DESC)t ;""")
-	rows2 = cur.fetchmany(5)	#TODO fetchall
+	rows2 = cur.fetchall()
 	for row in rows2:
 		for json_dict in row:
 			data_row = {}
@@ -321,7 +379,7 @@ def get_least_common_driving_times_control_room_data():
 		-- AND unit_id = MEEGEGEVEN UNIT_ID, MOET DE GEBRUIKER ZELF AANGEVEN
 		GROUP BY hour_
 		ORDER BY Times_appeared ASC)t ;""")
-	rows2 = cur.fetchmany(5)	#TODO fetchall							#TODO what to do with the MEEGEGEVEN UNIT_ID, MOET DE GEBRUIKER ZELF AANGEVEN
+	rows2 = cur.fetchall()												#TODO what to do with the MEEGEGEVEN UNIT_ID, MOET DE GEBRUIKER ZELF AANGEVEN
 	for row in rows2:
 		for json_dict in row:
 			data_row = {}
@@ -348,7 +406,7 @@ def get_locations_longest_stays_control_room_data():
 		 GROUP BY latitude, longitude 
 		 ORDER BY count(*) DESC
 		 LIMIT 10) AS results""")
-	rows2 = cur.fetchmany(5)	#TODO fetchall						#TODO Moet hier ook niet de tijd bij?
+	rows2 = cur.fetchall()					#TODO Moet hier ook niet de tijd bij?
 	for row in rows2:
 		for json_dict in row:
 			data_row = {}
@@ -371,8 +429,10 @@ def create_pdf_report():
 	c.drawString(9*cm, 22*cm, "Hello World!")  								# Fonts: can only use the standard 14 fonts that come with acrobat reader
 	c.save()
 
-def create_CityGis_report():
-	c = canvas.Canvas("CityGis Report5.pdf") 					# TODO: put date in title?
+def create_CityGis_report(filename, filedir):
+	print "Creating report..."
+	filepath = os.path.join(filedir, filename)
+	c = canvas.Canvas(filepath) 					
 	draw_front_page(c, "CityGis Report")
 	c.setFont("Helvetica", 12)	
 	c.drawString(9*cm, 22*cm, "Hello World!")
@@ -472,42 +532,42 @@ def draw_front_page(c, title):
 # print "Operation done successfully"
 
 #testing get_highest_speed_control_room_data, 
-highest_speed_locations = get_highest_speed_control_room_data()
-for dict in highest_speed_locations:
-	print "unit id: " + dict["unit id"]
-	print "latitude: " + dict["latitude"]
-	print "longitude: " + dict["longitude"]
-	print "max speed: " + dict["max"]
-	print "-=-"	
+# highest_speed_locations = get_highest_speed_control_room_data()
+# for dict in highest_speed_locations:
+	# print "unit id: " + dict["unit id"]
+	# print "latitude: " + dict["latitude"]
+	# print "longitude: " + dict["longitude"]
+	# print "max speed: " + dict["max"]
+	# print "-=-"	
 
-least_visited_locations = get_least_visited_control_room_data()
-for dict in least_visited_locations:
-	print "latitude: " + dict["latitude"]
-	print "longitude: " + dict["longitude"]
-	print "amount of visits: " + dict["amount of visits"]
-	print "-=-"	
+# least_visited_locations = get_least_visited_control_room_data()
+# for dict in least_visited_locations:
+	# print "latitude: " + dict["latitude"]
+	# print "longitude: " + dict["longitude"]
+	# print "amount of visits: " + dict["amount of visits"]
+	# print "-=-"	
 	
-common_driving_times = get_most_common_driving_times_control_room_data()
-for dict in common_driving_times:
-	print "hour: " + dict["hour"]
-	print "times: " + dict["times"]
-	print "-=-"
+# common_driving_times = get_most_common_driving_times_control_room_data()
+# for dict in common_driving_times:
+	# print "hour: " + dict["hour"]
+	# print "times: " + dict["times"]
+	# print "-=-"
 	
-uncommon_driving_times = get_least_common_driving_times_control_room_data()
-for dict in uncommon_driving_times:
-	print "hour: " + dict["hour"]
-	print "times: " + dict["times"]
-	print "-=-"
+# uncommon_driving_times = get_least_common_driving_times_control_room_data()
+# for dict in uncommon_driving_times:
+	# print "hour: " + dict["hour"]
+	# print "times: " + dict["times"]
+	# print "-=-"
 
-places_longest_stays = get_locations_longest_stays_control_room_data()
-for dict in places_longest_stays:
-	print "latitude: " + dict["latitude"]
-	print "longitude: " + dict["longitude"]
-	print "-=-"
+# places_longest_stays = get_locations_longest_stays_control_room_data()
+# for dict in places_longest_stays:
+	# print "latitude: " + dict["latitude"]
+	# print "longitude: " + dict["longitude"]
+	# print "-=-"
 	
-print "Operation done successfully"
+# print "Operation done successfully"
 	
-# create_CityGis_report()
+#create_CityGis_report("CityGis Report 6.pdf", "C:\Users\Rianne\Documents\NetBeansProjects\Versie-1")
 #create_pdf_report()
 
 # TODO: split into multiple classes?
