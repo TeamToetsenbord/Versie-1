@@ -5,13 +5,13 @@
  * @type WebSocket: the websocket for uploading files
  */
 var csvFileWebSocket;
-window.onload = initUploadFileSocket;
+initUploadFileSocket();
 /**
  * Intanciates the reportWebSocket.
  * @returns {undefined}
  */
 function initUploadFileSocket(){
-    csvFileWebSocket = new WebSocket("ws://"+ document.location.host+"/CityGisWebApplication/fileUploadEndpoint");
+    csvFileWebSocket = new WebSocket("ws://"+ document.location.host+ document.location.pathname +"fileUploadEndpoint");
     csvFileWebSocket.onmessage = onMessage;
     csvFileWebSocket.onerror = onError;
         
@@ -23,22 +23,20 @@ function onError(event){
 }
 
 //Call when a new file is uploaded.
-function sendNewCSVFileMessage(path, reportType){
+function sendNewCSVFileMessage(path, CSVFileType){
     
     var json = {};
     json.messageType = "newCSVFile"
-    json.reportType = reportType;
+    json.CSVFileType = CSVFileType;
     json.path = path;
-    console.log(json);
-    //csvFileWebSocket.send(json);
-    //csvFileWebSocket.send("end");
+    csvFileWebSocket.send(json);
 }
 
 
 function onMessage(event) {
    
     console.log(event.data);
-    //TODO 
+    //TODO return message to user
 }
 
 

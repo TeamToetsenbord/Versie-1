@@ -9,13 +9,19 @@ and open the template in the editor.
         <title>TODO supply a title</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+        <script src="resources/js/angular-websocket.js"></script>
         <script src="reportRequestScript.js"></script>
         <script src="uploadCSVFileScript.js"></script>
         <script src="loginScript.js"></script>
+        <script src="getReportDataScript.js"></script>
+     
     </head>
-    <body>
+    <body ng-app="reportDataGetter" ng-controller="getData" >
         <button onclick="sendReportRequest('Connections')">Send Report button!</button>
         <button onclick="sendNewCSVFileMessage()">Send File button!</button>
+        <button >Angular!</button>
         <div>Hello new website!</div>
     </body>
 </html>

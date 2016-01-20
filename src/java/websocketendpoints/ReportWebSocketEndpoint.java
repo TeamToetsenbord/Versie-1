@@ -21,7 +21,7 @@ import org.json.JSONObject;
 public class ReportWebSocketEndpoint {
 
     @OnMessage
-    public String onMessage(String message) {
+    public String onMessage(String message,  Session session) {
         
         try {
             JSONObject json = new JSONObject(message);

@@ -17,6 +17,9 @@ import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
+import org.json.JSONException;
+import org.json.JSONObject;
+import session.ServerManager;
 
 /**
  *
@@ -28,58 +31,12 @@ public class CSVUploadFileEndpoint {
 
     @OnMessage
     public String onMessage(String message) {
-//        if(message.equals("start")){
-//            createNewSocket();
-//        }else if(message.equals("end")){
-//            closeSocket();
-//        }
-//        sendLineToInsertApp(message);
-        return message;
-    }
-    
-    
-    
-
-    private void sendLineToInsertApp(String message) {
-        try {           
-            socket.getOutputStream().write(message.getBytes(Charset.forName("UTF-8")));
-            socket.getOutputStream().flush();
-            //TODO komt niet verder dan dit
-        } catch (UnknownHostException ex) {
-            Logger.getLogger(CSVUploadFileEndpoint.class.getName()).log(Level.SEVERE, null, ex);
+        try{
+        return ServerManager.sendAndRecieveMessageToServer(new JSONObject(message));
         } catch (IOException ex) {
-            Logger.getLogger(CSVUploadFileEndpoint.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-    }
-
-    @OnOpen
-    private void createNewSocket() {
-        
-        try {
-            if(socket == null || socket.isClosed()){
-            InetAddress address = InetAddress.getByName("localhost");
-            int port = 50;
-            Socket socket = new Socket(address, port);
-            }
-        } catch (UnknownHostException ex) {
-            System.out.println(ex);
-        } catch (IOException ex) {
-            System.out.println(ex);
-        }
-           
-    }
-
-    @OnClose
-    private void closeSocket() {
-        try {
-            if(!socket.isClosed() && !socket.isOutputShutdown()){
-            socket.getOutputStream().close();
-            socket.getOutputStream().flush();
-            socket.close();
-            }
-        } catch (IOException ex) {
-            System.out.println(ex);
+            return "Sorry, an error occured...";
+        } catch (JSONException ex) {
+            return "Sorry, not an JSONObject!";
         }
     }
     

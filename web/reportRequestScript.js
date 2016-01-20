@@ -5,14 +5,13 @@
  * @type WebSocket: the websocket for dowloading reports
  */
 var reportWebSocket;
-window.onload = initReportRequestSocket;
+initReportRequestSocket();
 /**
  * Intanciates the reportWebSocket.
  * @returns {undefined}
  */
 function initReportRequestSocket(){
-    console.log("creating..");
-    reportWebSocket = new WebSocket("ws://"+ document.location.host+"/CityGisWebApplication/reportEndpoint");
+    reportWebSocket = new WebSocket("ws://"+ document.location.host+ document.location.pathname +"reportEndpoint");
     reportWebSocket.onmessage = onMessage;
 }
 
