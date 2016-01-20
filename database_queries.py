@@ -38,8 +38,6 @@ def main(argv):
 	
 	print 'Number of arguments:', len(sys.argv), 'arguments.'
 	print 'Argument List:', str(sys.argv)
-	print """Does this work? %s""" % filename
-	
 
 def pick_report():
 	print "Picking report... " + report_type
@@ -48,6 +46,7 @@ def pick_report():
 		print "Create authority report"
 	elif report_type == "citygis":
 		print "Create citygis report"
+		create_CityGis_report(filename, directory)
 	elif report_type == "connections":
 		print "Create connections report"
 	elif report_type == "controlroom":
@@ -116,13 +115,14 @@ def get_CityGis_report_data():
 	city_gis_data = []
 	cur.execute("""SELECT to_json(city_gis_data) AS city_gis_data_result
 		FROM (
-		SELECT gps_new_event_date as event_date, gps_data.unit_id, gps_speed, cs_speed, gps_course, cs_course, gps_location, cs_location
+		SELECT gps_new_event_date as event_date, gps_data.unit_id, gps_speed, cs_speed, gps_course, cs_course, gps_latitude, gps_longitude, cs_latitude, cs_longitude
 		FROM
 		(	SELECT to_char(event_date::timestamp without time zone, 'YYYY-MM-DD HH24:MI:00') as gps_new_event_date, 
 			unit_id, 
 			round(avg(speed)) as gps_speed, 
 			round(avg(course)) as gps_course, 
-			(round(cast(avg(latitude) as decimal), 5), round(cast(avg(longitude) as decimal), 5)) as gps_location
+			round(cast(avg(latitude) as decimal), 5) as gps_latitude, 
+			round(cast(avg(longitude) as decimal), 5)as gps_longitude
 			FROM car_position_data WHERE connection_type = 'gps' 
 			GROUP BY unit_id, gps_new_event_date) gps_data
 		INNER JOIN
@@ -130,24 +130,25 @@ def get_CityGis_report_data():
 			unit_id, 
 			round(avg(speed)) as cs_speed, 
 			round(avg(course)) as cs_course, 
-			(round(cast(avg(latitude) as decimal),5), round(cast(avg(longitude) as decimal),5) ) as cs_location
+			round(cast(avg(latitude) as decimal), 5) as cs_latitude, 
+			round(cast(avg(longitude) as decimal), 5) as cs_longitude
 			FROM car_position_data WHERE connection_type = 'car system' 
 			GROUP BY unit_id, cs_new_event_date) cs_data
 		ON gps_data.gps_new_event_date = cs_data.cs_new_event_date
 		AND
 		cs_data.unit_id = gps_data.unit_id
-		WHERE  cs_speed != gps_speed OR cs_course != gps_course OR cs_location != gps_location
-		ORDER BY (cs_speed != gps_speed AND cs_course != gps_course AND cs_location != gps_location) DESC ) AS city_gis_data""")
+		WHERE  cs_speed != gps_speed OR cs_course != gps_course OR cs_latitude != gps_latitude OR cs_longitude != cs_longitude
+		ORDER BY (cs_speed != gps_speed AND cs_course != gps_course AND cs_latitude != gps_latitude AND cs_longitude != cs_longitude) DESC LIMIT 10) AS city_gis_data""")
 	rows2 = cur.fetchall()
 	for row in rows2:
 		for json_dict in row:
 			data_row = {}
-			data_row["gps location f1"] = str(json_dict["gps_location"]["f1"])
-			data_row["gps location f2"] = str(json_dict["gps_location"]["f2"])
+			data_row["gps latitude"] = str(json_dict["gps_latitude"])
+			data_row["gps longitude"] = str(json_dict["gps_longitude"])
 			data_row["gps course"] = str(json_dict["gps_course"])
 			data_row["gps speed"] = str(json_dict["gps_speed"])
-			data_row["cs location f1"] = str(json_dict["cs_location"]["f1"])
-			data_row["cs location f2"] = str(json_dict["cs_location"]["f2"])
+			data_row["cs latitude"] = str(json_dict["cs_latitude"])
+			data_row["cs longitude"] = str(json_dict["cs_longitude"])
 			data_row["cs course"] = str(json_dict["cs_course"])
 			data_row["cs speed"] = str(json_dict["cs_speed"])
 			city_gis_data.append(data_row)
@@ -478,17 +479,17 @@ def draw_front_page(c, title):
 # print "Operation done successfully"
 
 #testing get_CityGis_report_data function
-# city_gis_data = get_CityGis_report_data()
-# for dict in city_gis_data:
-	# print "cs location f1: " + dict["cs location f1"]
-	# print "cs location f2: " + dict["cs location f2"]
-	# print "cs speed: " + dict["cs speed"]
-	# print "cs course: " + dict["cs course"]
-	# print "gps location f1: " + dict["gps location f1"]
-	# print "gps location f2: " + dict["gps location f2"]
-	# print "gps speed: " + dict["gps speed"]
-	# print "gps course: " + dict["gps course"]
-	# print "-=-"
+city_gis_data = get_CityGis_report_data()
+for dict in city_gis_data:
+	print "cs latitude: " + dict["cs latitude"]
+	print "cs longitude: " + dict["cs longitude"]
+	print "cs speed: " + dict["cs speed"]
+	print "cs course: " + dict["cs course"]
+	print "gps latitude: " + dict["gps latitude"]
+	print "gps longitude: " + dict["gps longitude"]
+	print "gps speed: " + dict["gps speed"]
+	print "gps course: " + dict["gps course"]
+	print "-=-"
 
 # print "Operation done successfully"
 
