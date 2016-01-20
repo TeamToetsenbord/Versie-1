@@ -141,7 +141,7 @@ public class CSVFileReader extends Thread{
     }
     
     public static void readFileByType(String type, String path){
-        System.out.println("Start: " + new Date());
+        System.out.println("Started reading: " + new Date());
         switch(type){
             case "Positions":
                new PositionsCSVReaderThread(path).start();

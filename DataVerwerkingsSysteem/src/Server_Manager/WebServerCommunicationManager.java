@@ -105,11 +105,17 @@ public class WebServerCommunicationManager extends Thread{
                 case "logIn":
                     doLogIn(json, socket);
                     break;
-                case "reportData":
+                case "getReport":
                     getReportData(json, socket);
                     break;
-                 //TODO new file, live stream?   
-                    
+                case "newCSVFile":
+                    newCSVFile(json, socket);
+                    break;
+                default:
+                    JSONObject returnMessage = new JSONObject();
+                    returnMessage.put("type", "error");
+                    returnMessage.put("error", "The jsonObject does not have an expected type!");
+                    returnMessageToSocket(returnMessage.toString(), socket);
             }
            }
         } catch (JSONException ex) {
@@ -129,11 +135,18 @@ public class WebServerCommunicationManager extends Thread{
     private void doLogIn(JSONObject json, Socket socket) throws JSONException, IOException {
         String username = json.getString("username");
         String password = json.getString("password");
-        String returnUserString = Database_Manager.logIn(username, password);
-        if(returnUserString == null){
-            returnUserString = "Not a user";
+        String returnUserName = Database_Manager.logIn(username, password);
+        
+        JSONObject returnJSON = new JSONObject();
+        if(returnUserName == null){
+            returnJSON.put("type", "error");
+            returnJSON.put("error", "Not a user!");
+        }else{
+        returnJSON.put("type", "user");
+        returnJSON.put("username", returnUserName);
         }
-        returnMessageToSocket(returnUserString, socket);
+        
+        returnMessageToSocket(returnJSON.toString(), socket);
     }
     
     /**
@@ -158,5 +171,15 @@ public class WebServerCommunicationManager extends Thread{
         String unitId = json.getString("unitId");
         JSONObject jsonReport = Database_Manager.getLatestReportData(reportType, unitId);
         returnMessageToSocket(jsonReport.toString(), socket);
+    }
+
+    private void newCSVFile(JSONObject json, Socket socket) throws JSONException {
+       String path = json.getString("path");
+       String CSVtype = json.getString("CSVFileType");
+       CSVFileReader.readFileByType(CSVtype, path);
+       JSONObject returnJSON = new JSONObject();
+       returnJSON.put("type","message");
+       returnJSON.put("message", "Thank you for your .csv file!");
+       returnMessageToSocket(returnJSON.toString(), socket);
     }
 }
