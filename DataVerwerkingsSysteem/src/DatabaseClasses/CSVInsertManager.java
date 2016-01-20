@@ -28,13 +28,21 @@ public abstract class CSVInsertManager {
      * but they will be handled in the the persistOrUpdateObject function.
      */
     private static ArrayList<EntityClass> csvObjectsToPersist = new ArrayList();
-    
     private static EntityManagerFactory emf = null;
     private static ArrayList<InsertThread> insertThreads = new ArrayList();
     private static final int MAX_AMOUNT_OF_THREADS = 100;
     private static final int AMOUNT_OF_OBJECTS_PER_THREAD = 100;
     private static boolean inserting = false;
     private static boolean stopped = false;
+    private static boolean newDataInserted = false;
+
+    public static boolean isNewDataInserted() {
+        return newDataInserted;
+    }
+
+    public static void setNewDataInserted(boolean newDataInserted) {
+        CSVInsertManager.newDataInserted = newDataInserted;
+    }
 
     public static boolean isInserting() {
         return inserting;

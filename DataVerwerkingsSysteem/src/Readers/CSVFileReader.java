@@ -42,7 +42,7 @@ public class CSVFileReader extends Thread{
     
     private static final int TICKS_PER_SECOND = 60;
     public static boolean reading = false;
-    ServerSocket serverSocket; 
+    
     static final String CSV_SPLIT_BY = ";"; //splits file bij elke ;
 
     public static boolean isReading() {
@@ -56,65 +56,11 @@ public class CSVFileReader extends Thread{
             CSVInsertManager.createNewInsertThreadIfNeeded();
         }
     }
-    private void createServerSocket(){
-        if(serverSocket == null || serverSocket.isClosed()){
-            try {
-                   InetAddress address = InetAddress.getByName("localhost");
-                   int port = 50;
-                   int maxConnections = 1000;
-                   serverSocket = new ServerSocket(port, maxConnections, address);
-               } catch (UnknownHostException ex) {
-                   System.out.println(ex);
-               } catch (IOException ex) {
-                   System.out.println(ex);
-            }
-        }
-    
-    }
+   
     public CSVFileReader(){
-        createServerSocket();
-        this.start();
+       
     }
-    
-    private void getMessagesFromWebApp(){
-        String inputMessage = "";
-        try {
-            Socket socket = serverSocket.accept();
-             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-             
-             String inputLine = in.readLine();
-             System.out.println("inputline: " + inputLine);
-             if(inputLine.equals("start")){
-               CSVFileReader.setReading(true);
-               }else if(inputLine.equals("end")){
-                   CSVFileReader.setReading(false);
-               }else if (inputLine.startsWith("{")){
-                    inputMessage = inputLine;
-                   while ((inputLine = in.readLine()) != null) {
-                    inputMessage.concat(inputLine);
-                    if(inputLine.endsWith("}")){
-                      break;
-                    }
-                }   
-                    JSONObject json = new JSONObject(inputMessage);
-                    readLineByType(json.getString("type"), json.getString("line"));
-               }
-               
-               
-             
-        } catch (IOException ex) {
-            System.out.println(ex);
-        } catch (JSONException ex) {
-            System.out.println(ex + inputMessage);
-        }
-        
-    }
-    @Override 
-    public void run(){
-       while(true){
-       getMessagesFromWebApp();
-       }
-    }
+
     
     
     protected static Date getDateByString(String string){
