@@ -59,6 +59,7 @@ public class Database_Manager extends Thread {
     private static final int OBJECTS_PER_TRANSACTION = 100; 
     private static EntityManager entityManager = null;
     private static final String PERSISTENCE_UNIT_NAME = "DataProccesingSystemPU";
+
     private int count = OBJECTS_PER_TRANSACTION;
     private User_Interface ui = null;
     private static boolean running = false;
@@ -301,7 +302,7 @@ public class Database_Manager extends Thread {
             || reportDataType.equals("Control_Room")
             || reportDataType.equals("Authority")   
             || reportDataType.equals("CityGis")){
-            return getJSONFromDatabase(reportDataType, unitId);
+            return getJSONReportFromDatabase(reportDataType, unitId);
         }else{
           JSONObject returnJSON =  new JSONObject();
           returnJSON.put("error", "This type is not a report type!");
@@ -318,7 +319,7 @@ public class Database_Manager extends Thread {
      * @param unitId: in case of thte Control_Room report, a unitId is necessary
      * @return the report JSONObject
      */
-    public static JSONObject getJSONFromDatabase(String reportType, String unitId){
+    public static JSONObject getJSONReportFromDatabase(String reportType, String unitId){
         
         JSONObject returnJSON = new JSONObject();
         try{
@@ -385,6 +386,38 @@ public class Database_Manager extends Thread {
         }finally{
             return queriesWithColumnname;
         }
+    }
+    
+    
+    public static JSONObject getAllUnitIdsJSON() {
+        JSONObject returnJSON = new JSONObject();
+        try{
+
+            returnJSON.put("type", "allUnitIds");
+            JSONArray unitIds = new JSONArray();
+            EntityManager em = entityManagerFactory.createEntityManager();
+            em.getTransaction().begin();
+            Query query = em.createNativeQuery("SELECT to_json(c) FROM cars c");
+            List resultSet = query.getResultList();
+            em.getTransaction().commit();
+            for(Object unitId: resultSet){
+                unitIds.put(new JSONObject(unitId.toString()));
+            }
+            returnJSON.put("unitIds", unitIds);
+        
+        } catch (JSONException ex) {
+            System.out.println("A JSONException occured while getting all the unitIds:");
+            System.out.println(ex);
+        }catch (IllegalStateException ex){
+            System.out.println("An error occured while getting data from the database:");
+            System.out.println(ex);
+        }catch (PersistenceException ex){
+            System.out.println("An Persistence error occured while getting data from the database:");
+            System.out.println(ex);
+        }   
+        
+        return returnJSON;
+        
     }
     
 }

@@ -96,6 +96,8 @@ public class WebServerCommunicationManager extends Thread{
                 case "newCSVFile":
                     newCSVFile(json, socket);
                     break;
+                case "getUnitIds":
+                    getUnitIds(socket);
                 default:
                     JSONObject returnMessage = new JSONObject();
                     returnMessage.put("type", "error");
@@ -177,5 +179,11 @@ public class WebServerCommunicationManager extends Thread{
        returnJSON.put("type","message");
        returnJSON.put("message", "Thank you for your .csv file!");
        returnMessageToSocket(returnJSON.toString(), socket);
+    }
+    
+    
+    private static void getUnitIds(Socket socket) {
+        JSONObject returnjson = Database_Manager.getAllUnitIdsJSON();
+        returnMessageToSocket(returnjson.toString(), socket);
     }
 }

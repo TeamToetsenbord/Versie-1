@@ -5,40 +5,11 @@
  */
 package dataverwerkingssysteem;
 
-import DatabaseClasses.EntityClasses.Car;
-import DatabaseClasses.EntityClasses.CarPositionData;
 import DatabaseClasses.Database_Manager;
-import DatabaseClasses.EntityClasses.CarPositionDataPK;
-import DatabaseClasses.EntityClasses.EntityClass;
-import DatabaseClasses.InsertThread;
-import DatabaseClasses.EntityClasses.User;
 import InputStreams.MqttReciever;
-import Readers.CSVFileReader;
-import Readers.PositionsCSVReaderThread;
-import Server_Manager.HTTPReciever;
 import Server_Manager.WebServerCommunicationManager;
 import UI.User_Interface;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-import org.json.JSONException;
 
 /**
  *
@@ -53,9 +24,8 @@ public class DataVerwerkingsSysteem {
         
         User_Interface ui = new User_Interface();
         Database_Manager dbManager = new Database_Manager(ui); 
-        //MqttReciever m = new MqttReciever();
+        MqttReciever m = new MqttReciever();
         WebServerCommunicationManager wsc = new WebServerCommunicationManager();
-        
     }
     
      

@@ -5,20 +5,13 @@
  */
 package UI;
 
-import DatabaseClasses.Database_Manager;
 import Readers.CSVFileReader;
-import Server_Manager.HTTPReciever;
-import java.awt.event.MouseListener;
-import java.io.File;
-import javafx.stage.FileChooser;
-import javax.persistence.EntityManager;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import static javax.swing.JOptionPane.showMessageDialog;
 import javax.swing.JPanel;
 
 /**
@@ -53,7 +46,6 @@ public class User_Interface extends javax.swing.JFrame {
         pathLabel = new javax.swing.JLabel();
         insertingLabel = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
-        sendSignalBtn = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -70,16 +62,6 @@ public class User_Interface extends javax.swing.JFrame {
 
         jLabel1.setText("Inserting:");
 
-        sendSignalBtn.setText("Send Signal");
-        sendSignalBtn.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                sendSignalBtnMouseClicked(evt);
-            }
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                sendSignalBtnMouseEntered(evt);
-            }
-        });
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -92,12 +74,9 @@ public class User_Interface extends javax.swing.JFrame {
                 .addGap(23, 23, 23))
             .addGroup(layout.createSequentialGroup()
                 .addGap(38, 38, 38)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(sendSignalBtn)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(addFileBtn)
-                        .addGap(18, 18, 18)
-                        .addComponent(pathLabel)))
+                .addComponent(addFileBtn)
+                .addGap(18, 18, 18)
+                .addComponent(pathLabel)
                 .addContainerGap(211, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -107,9 +86,7 @@ public class User_Interface extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(insertingLabel)
                     .addComponent(jLabel1))
-                .addGap(7, 7, 7)
-                .addComponent(sendSignalBtn)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 129, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 159, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(addFileBtn)
                     .addComponent(pathLabel))
@@ -157,26 +134,14 @@ public class User_Interface extends javax.swing.JFrame {
                 }   
     }//GEN-LAST:event_addFileBtnMouseClicked
 
-    private void sendSignalBtnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_sendSignalBtnMouseClicked
-        //HTTPReciever.sentSignal();
-        
-       
-    }//GEN-LAST:event_sendSignalBtnMouseClicked
-
-    private void sendSignalBtnMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_sendSignalBtnMouseEntered
-        // TODO add your handling code here:
-    }//GEN-LAST:event_sendSignalBtnMouseEntered
-
     public static void setInsertingLabelText(String text){
         insertingLabel.setText(text);
     }
-    
     
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addFileBtn;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel pathLabel;
-    private javax.swing.JButton sendSignalBtn;
     // End of variables declaration//GEN-END:variables
 }
