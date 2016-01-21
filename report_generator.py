@@ -6,6 +6,9 @@ import sys
 import reportlab
 import time
 
+# This file if run by calling (on the command line of from another program) python, then the filename (report_generator.py), then the filename of the report you want to create,
+# then the directory where you want to save it, then the report type (authority, citygis, connections, controlroom), then, if you want to create a control room report, a unit_id, all separated by spaces
+# Example: python report_generator.py CityGisReport.pdf C:\Users\Kyra\Documents controlroom 999
 
 # installed: psycopg2
 # reportlab with easy_install reportlab, then downloaded c++ thingy from https://www.microsoft.com/en-us/download/details.aspx?id=44266, VCForPython27
@@ -751,7 +754,7 @@ def pick_report():
 		else:
 			sys.exit("You didn't provide a (correct) unit_id")
 	else:
-		sys.exit("You didn't provide any arguments. You should provide a filename, directory, report_type and optionally a unit_id")
+		sys.exit("You didn't provide any arguments, or a nonexistant report type. You should provide a filename, directory, report_type and optionally a unit_id")
 	
 # Call the starting functions
 if __name__ == "__main__":

@@ -3,9 +3,15 @@ import json
 import os
 import re
 import sys
-import reportlab
-import time
+import smtplib
+from email.mime.text import MIMEText
 
+# TODO, CHANGE THIS TO MAIL STUFF
+# This file if run by calling (on the command line of from another program) python, then the filename (email_generator.py), then the email address you want to send the email from, 
+# then the password for the address you want to send the email from, then the email address you want to sent the email to, then the email type (authority, citygis, connections, controlroom), 
+# and then, if you want to create a control room report, a unit_id, all separated by spaces
+# The from email adress should be a gmail address
+# Example: python email_generator.py me.example@gmail.com you.whoisthis@hotmail.com authority
 
 # installed: psycopg2
 # reportlab with easy_install reportlab, then downloaded c++ thingy from https://www.microsoft.com/en-us/download/details.aspx?id=44266, VCForPython27
@@ -13,34 +19,37 @@ import time
 # TODO: Write a note about how bad the code is
 # Dear person reviewing this code,
 # I'd just like to apologize for this terrible code. There's repeated code everywhere, everything is in the same class, the reports that are generated are terrible, 
-# the functions generating the reports are way too long, etc... It's  not pretty.
+# the functions generating the reports are way too long, etc... It's  not pretty. Also, this class is mostly just a copy of the other class.
 # Sincerely, Rianne
 # ik krijg type rapport, naam, directory, unit_id (als dat nodig is)	
 
 # TODO: emails doen, gewoon alleen de data er in
 
 # Creates the variables that will be assigned values based on the arguments used when running the script
-filename = ""
-directory = ""
-report_type = ""
+email_address_from = ""
+email_password = ""
+email_address_to = ""
+email_type = ""
 unit_id = ""
 
 # Assigns the values of the arguments used when running the script to the right variables
 def main(argv):
-	global filename
-	global directory
-	global report_type
+	global email_address_from
+	global email_password
+	global email_address_to
+	global email_type
 	global unit_id
 
-	if  len(sys.argv) == 5:
-		filename_arg, directory_arg, report_type_arg, unit_id_arg = argv
+	if  len(sys.argv) == 6:
+		email_address_from_arg, email_password_arg, email_address_to_arg, email_type_arg, unit_id_arg = argv
 		unit_id = unit_id_arg
-	elif len(sys.argv) == 4:
-		filename_arg, directory_arg, report_type_arg = argv
+	elif len(sys.argv) == 5:
+		email_address_from_arg, email_password_arg, email_address_to_arg, email_type_arg = argv
 		
-	filename = filename_arg
-	directory = directory_arg
-	report_type = report_type_arg
+	email_address_from = email_address_from_arg
+	email_password = email_password_arg
+	email_address_to = email_address_to_arg
+	email_type = email_type_arg
 	
 	print 'Number of arguments:', len(sys.argv), 'arguments.'
 	print 'Argument List:', str(sys.argv)
@@ -415,343 +424,161 @@ from reportlab.lib.units import cm
 from reportlab.platypus import Table, TableStyle, SimpleDocTemplate
 from reportlab.lib import colors
 
-# These are the methods used to create the pdf reports with reportlab
-# Note about Fonts: can only use the standard 14 fonts that come with acrobat reader
-def create_pdf_report():
-	c = canvas.Canvas("hello2.pdf") 
-	draw_front_page(c, "Hello")
-	c.setFont("Helvetica", 12)
-	c.drawString(9*cm, 22*cm, "Hello World!")  								
-	c.save()
-
-def create_authority_report(filename, filedir):
-	filepath = os.path.join(filedir, filename)
-	c = canvas.Canvas(filepath) 	
-	front_page_text = "This report shows the most visited places and the amount of visits."
-	draw_front_page(c, "Authority Report", front_page_text)
-
-	position_x = 4
-	position_y = 26
-	result_counter = 0
-	
+# These are the methods used to create the e-mails
+def create_authority_report_email():
+	message_list = []
 	most_visited_places, amount_of_visits = get_authority_report_data()
+	message_list.append("Most visited places: ")
 	for dict in most_visited_places:
-		c.drawString(position_x*cm, (position_y)*cm, "latitude: " + dict["latitude"])
-		c.drawString(position_x*cm, (position_y - 0.5)*cm, "longitude: " + dict["longitude"])
-		c.drawString(position_x*cm, (position_y - 1.0)*cm,"amount of visits: " + dict["amount of visits"])
-		if result_counter == 0:
-			c.setFont("Helvetica", 16)
-			c.drawString(position_x*cm, 27*cm, "Most visited places")
-			c.setFont("Helvetica", 12)
-		result_counter += 1
-		position_y -= 3
-		if result_counter % 7 == 0 and result_counter != 0:
-			position_y = 26
-			c.showPage()
-	c.showPage()
-	position_y = 26
-	result_counter = 0
-	
+		message_list.append("latitude: " + dict["latitude"] + "\n" +
+		"longitude: " + dict["longitude"] + "\n" +
+		"amount of visits: " + dict["amount of visits"] + "\n")
+	message_list.append("Amount of visits: ")
 	for dict in amount_of_visits:
-		c.drawString(position_x*cm, (position_y)*cm, "latitude: " + dict["latitude"])
-		c.drawString(position_x*cm, (position_y - 0.5)*cm, "longitude: " + dict["longitude"])
-		c.drawString(position_x*cm, (position_y - 1.0)*cm, "amount of visits: " + dict["amount of visits"])
-		if result_counter == 0:
-			c.setFont("Helvetica", 16)
-			c.drawString(position_x*cm, 27*cm, "Amount of visits")
-			c.setFont("Helvetica", 12)
-		result_counter += 1
-		position_y -= 3
-		if result_counter % 7 == 0 and result_counter != 0:
-			position_y = 26
-			c.showPage()
-	print "Created Authority report"
-	c.save()
+		message_list.append("latitude: " + dict["latitude"] + "\n" +
+		"longitude: " + dict["longitude"] + "\n" +
+		"amount of visits: " + dict["amount of visits"] + "\n")
 	
-def create_CityGis_report(filename, filedir):
-	filepath = os.path.join(filedir, filename)
-	# doc = SimpleDocTemplate(filepath)
-	c = canvas.Canvas(filepath)
-	front_page_text = "This report shows all of the occasions on which the gps and car system coordinates did not match."
-	draw_front_page(c, "CityGis Report", front_page_text)
-	#Table(get_CityGis_report_data(), colWidths=2*cm, rowHeights=2*cm, style=None, splitByRow=1)
-	# container for the 'Flowable' objects
-	# elements = []
-	# data= [['00', '01', '02', '03', '04'],
-		   # ['10', '11', '12', '13', '14'],
-		   # ['20', '21', '22', '23', '24'],
-		   # ['30', '31', '32', '33', '34']]
-	# t=Table(data,5*[2*cm], 4*[2*cm])
-	# t.setStyle(TableStyle([('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
-                                        # ('BOX', (0, 0), (-1, -1), 0.25, colors.black)]))
-	# elements.append(t)
-	# elements.append(c)
-	# # write the document to disk
-	# doc.build(elements)
-	position_x = 4
-	position_y = 26
-	result_counter = 0
+	send_email("\n".join(message_list), "Authority Report email")
+	
+def create_CityGis_report_email():
+	message_list = []
+	
 	city_gis_data = get_CityGis_report_data()
 	for dict in city_gis_data:
-		c.drawString(position_x*cm, position_y*cm, "Car system:")
-		c.drawString(position_x*cm, (position_y - 0.5)*cm, "cs latitude: " + dict["cs latitude"])
-		c.drawString(position_x*cm, (position_y - 1.0)*cm,"cs longitude: " + dict["cs longitude"])
-		c.drawString(position_x*cm, (position_y - 1.5)*cm,"cs speed: " + dict["cs speed"])
-		c.drawString(position_x*cm, (position_y - 2.0)*cm,"cs course: " + dict["cs course"])
-		c.drawString(position_x*cm, (position_y - 2.5)*cm, "GPS:")
-		c.drawString(position_x*cm, (position_y - 3.0)*cm,"gps latitude: " + dict["gps latitude"])
-		c.drawString(position_x*cm, (position_y - 3.5)*cm,"gps longitude: " + dict["gps longitude"])
-		c.drawString(position_x*cm, (position_y - 4.0)*cm,"gps speed: " + dict["gps speed"])
-		c.drawString(position_x*cm, (position_y - 4.5)*cm,"gps course: " + dict["gps course"])
-		result_counter += 1
-		position_y -= 6
-		if result_counter % 4 == 0 and result_counter != 0:
-			position_y = 26
-			c.showPage()
-	print "Created CityGis report"
-	c.save()
-	
-def create_connections_report(filename, filedir):
-	filepath = os.path.join(filedir, filename)
-	c = canvas.Canvas(filepath)
-	front_page_text = "This report gives an overview of the quality of the different connections types."
-	draw_front_page(c, "Connections Report", front_page_text)
-	
-	position_x = 4
-	position_y = 26
-	result_counter = 0
-	best_overall_connection_locations, worst_overall_connection_locations = get_overall_connections_report_data()
-	for dict in best_overall_connection_locations:
-		c.drawString(position_x*cm, position_y*cm, "latitude: " + dict["latitude"])
-		c.drawString(position_x*cm, (position_y - 0.5)*cm, "longitude: " + dict["longitude"])
-		if result_counter == 0:
-			c.setFont("Helvetica", 16)
-			c.drawString(position_x*cm, 27*cm, "Best overall connections")
-			c.setFont("Helvetica", 12)
-		result_counter += 1
-		position_y -= 2.5
-		if result_counter % 9 == 0 and result_counter != 0:
-			position_y = 26
-			c.showPage()
-	c.showPage()
-	position_y = 26
-	result_counter = 0
-	
-	for dict in worst_overall_connection_locations:
-		c.drawString(position_x*cm, position_y*cm, "latitude: " + dict["latitude"])
-		c.drawString(position_x*cm, (position_y - 0.5)*cm, "longitude: " + dict["longitude"])
-		if result_counter == 0:
-			c.setFont("Helvetica", 16)
-			c.drawString(position_x*cm, 27*cm, "Worst overall connections")
-			c.setFont("Helvetica", 12)
-		result_counter += 1
-		position_y -= 2.5
-		if result_counter % 9 == 0 and result_counter != 0:
-			position_y = 26
-			c.showPage()
-	c.showPage()
-	position_y = 26
-	result_counter = 0
-		
-	best_hsdpa_connection_locations, worst_hsdpa_connection_locations = get_hsdpa_connections_report_data()
-	for dict in best_hsdpa_connection_locations:
-		c.drawString(position_x*cm, position_y*cm,  "latitude: " + dict["latitude"])
-		c.drawString(position_x*cm, (position_y - 0.5)*cm,  "longitude: " + dict["longitude"])
-		if result_counter == 0:
-			c.setFont("Helvetica", 16)
-			c.drawString(position_x*cm, 27*cm, "Best hsdpa connections")
-			c.setFont("Helvetica", 12)
-		result_counter += 1
-		position_y -= 2.5
-		if result_counter % 9 == 0 and result_counter != 0:
-			position_y = 26
-			c.showPage()
-	c.showPage()
-	position_y = 26
-	result_counter = 0
-	
-	for dict in worst_hsdpa_connection_locations:
-		c.drawString(position_x*cm, position_y*cm,  "latitude: " + dict["latitude"])
-		c.drawString(position_x*cm, (position_y - 0.5)*cm,  "longitude: " + dict["longitude"])
-		if result_counter == 0:
-			c.setFont("Helvetica", 16)
-			c.drawString(position_x*cm, 27*cm, "Worst hsdpa connections")
-			c.setFont("Helvetica", 12)
-		result_counter += 1
-		position_y -= 2.5
-		if result_counter % 9 == 0 and result_counter != 0:
-			position_y = 26
-			c.showPage()
-	c.showPage()
-	position_y = 26
-	result_counter = 0
-	
-	best_tcp_connections, worst_tcp_connections = get_tcp_connections_report_data()
-	for dict in best_tcp_connections:
-		c.drawString(position_x*cm, position_y*cm, "latitude: " + dict["latitude"])
-		c.drawString(position_x*cm, (position_y - 0.5)*cm,  "longitude: " + dict["longitude"])
-		if result_counter == 0:
-			c.setFont("Helvetica", 16)
-			c.drawString(position_x*cm, 27*cm, "Best tcp connections")
-			c.setFont("Helvetica", 12)
-		result_counter += 1
-		position_y -= 2.5
-		if result_counter % 9 == 0 and result_counter != 0:
-			position_y = 26
-			c.showPage()
-	c.showPage()
-	position_y = 26
-	result_counter = 0
-	
-	for dict in worst_tcp_connections:
-		c.drawString(position_x*cm, position_y*cm,  "latitude: " + dict["latitude"])
-		c.drawString(position_x*cm, (position_y - 0.5)*cm,  "longitude: " + dict["longitude"])
-		if result_counter == 0:
-			c.setFont("Helvetica", 16)
-			c.drawString(position_x*cm, 27*cm, "Worst tcp connections")
-			c.setFont("Helvetica", 12)
-		result_counter += 1
-		position_y -= 2.5
-		if result_counter % 9 == 0 and result_counter != 0:
-			position_y = 26
-			c.showPage()
-	c.showPage()
-	position_y = 26
-	result_counter = 0
-	
-	print "Created connections report"
-	c.save()
+		message_list.append("Car system: " + "\n" +
+		"cs latitude: " + dict["cs latitude"] + "\n" +
+		"cs longitude: " + dict["cs longitude"] + "\n" +
+		"cs speed: " + dict["cs speed"] + "\n" +
+		"cs course: " + dict["cs course"] + "\n" +
+		"GPS: " + "\n" +
+		"gps latitude: " + dict["gps latitude"] + "\n" +
+		"gps longitude: " + dict["gps longitude"] + "\n" +
+		"gps speed: " + dict["gps speed"] + "\n" +
+		"gps course: " + dict["gps course"] + "\n")
 
-def create_control_room_report(filename, filedir):
-	filepath = os.path.join(filedir, filename)
-	c = canvas.Canvas(filepath)
-	front_page_text = "This report contains data for the control room"
-	draw_front_page(c, "Control Room Report", front_page_text)
+	send_email("\n".join(message_list), "CityGis Report email")
 	
-	position_x = 4
-	position_y = 26
-	result_counter = 0
-	highest_speed_locations = get_highest_speed_control_room_data()
-	for dict in highest_speed_locations:
-		c.drawString(position_x*cm, position_y*cm, "unit id: " + dict["unit id"])
-		c.drawString(position_x*cm, (position_y - 0.5)*cm, "latitude: " + dict["latitude"])
-		c.drawString(position_x*cm, (position_y - 1.0)*cm, "longitude: " + dict["longitude"])
-		c.drawString(position_x*cm, (position_y - 1.5)*cm, "max speed: " + dict["max"])
-		if result_counter == 0:
-			c.setFont("Helvetica", 16)
-			c.drawString(position_x*cm, 27*cm, "Top 10 highest speeds")
-			c.setFont("Helvetica", 12)
-		result_counter += 1
-		position_y -= 3.5
-		if result_counter % 5 == 0 and result_counter != 0:
-			position_y = 26
-			c.showPage()
-	c.showPage()
-	position_y = 26
-	result_counter = 0
+def create_connections_report_email():
+	message_list = []
+	
+	best_overall_connection_locations, worst_overall_connection_locations = get_overall_connections_report_data()
+	message_list.append("Overall connections")
+	message_list.append("Best: ")
+	for dict in best_overall_connection_locations:
+		message_list.append("latitude: " + dict["latitude"] + "\n" +
+		"longitude: " + dict["longitude"] + "\n")
+	message_list.append("Worst: ")
+	for dict in worst_overall_connection_locations:
+		message_list.append("latitude: " + dict["latitude"] + "\n" +
+		"longitude: " + dict["longitude"] + "\n")
+
+	best_hsdpa_connection_locations, worst_hsdpa_connection_locations = get_hsdpa_connections_report_data()
+	message_list.append("hspda connections")
+	message_list.append("Best: ")
+	for dict in best_hsdpa_connection_locations:
+		message_list.append("latitude: " + dict["latitude"] + "\n" +
+		"longitude: " + dict["longitude"] + "\n")
+	message_list.append("Worst: ")
+	for dict in worst_hsdpa_connection_locations:
+		message_list.append("latitude: " + dict["latitude"] + "\n" +
+		"longitude: " + dict["longitude"] + "\n")
 		
+	best_tcp_connections, worst_tcp_connections = get_tcp_connections_report_data()
+	message_list.append("tcp connections")
+	message_list.append("Best: ")
+	for dict in best_tcp_connections:
+		message_list.append("latitude: " + dict["latitude"] + "\n" +
+		"longitude: " + dict["longitude"] + "\n")
+	message_list.append("Worst: ")
+	for dict in worst_tcp_connections:
+		message_list.append("latitude: " + dict["latitude"] + "\n" +
+		"longitude: " + dict["longitude"] + "\n")	
+	
+	send_email("\n".join(message_list), "Connections Report email")
+
+def create_control_room_report_email():
+	message_list = []
+	
+	highest_speed_locations = get_highest_speed_control_room_data()
+	message_list.append("Unit_id used:" + unit_id)
+	message_list.append("Highest speed: ")
+	for dict in highest_speed_locations:
+		message_list.append( "unit id: " + dict["unit id"] + "\n" +
+		 "latitude: " + dict["latitude"] + "\n" +
+		 "longitude: " + dict["longitude"] + "\n" +
+		 "max speed: " + dict["max"] + "\n")
+
 	least_visited_locations = get_least_visited_control_room_data()
+	message_list.append("Least visited locations: ")
 	for dict in least_visited_locations:
-		c.drawString(position_x*cm, position_y*cm, "latitude: " + dict["latitude"])
-		c.drawString(position_x*cm, (position_y - 0.5)*cm, "longitude: " + dict["longitude"])
-		c.drawString(position_x*cm, (position_y - 1.0)*cm, "amount of visits: " + dict["amount of visits"])
-		if result_counter == 0:
-			c.setFont("Helvetica", 16)
-			c.drawString(position_x*cm, 27*cm, "Top 10 visited locations")
-			c.setFont("Helvetica", 12)
-		result_counter += 1
-		position_y -= 3
-		if result_counter % 5 == 0 and result_counter != 0:
-			position_y = 26
-			c.showPage()
-	c.showPage()
-	position_y = 26
-	result_counter = 0
+		message_list.append("latitude: " + dict["latitude"] + "\n" +
+		 "longitude: " + dict["longitude"] + "\n" +
+		 "amount of visits: " + dict["amount of visits"] + "\n")
 		
 	common_driving_times = get_most_common_driving_times_control_room_data()
+	message_list.append("Most common driving times: ")
 	for dict in common_driving_times:
-		c.drawString(position_x*cm, position_y*cm, "hour: " + dict["hour"])
-		c.drawString(position_x*cm, (position_y - 0.5)*cm, "times: " + dict["times"])
-		if result_counter == 0:
-			c.setFont("Helvetica", 16)
-			c.drawString(position_x*cm, 27*cm, "Most common driving times")
-			c.setFont("Helvetica", 12)
-		result_counter += 1
-		position_y -= 2.5
-		if result_counter % 9 == 0 and result_counter != 0:
-			position_y = 26
-			c.showPage()
-	c.showPage()
-	position_y = 26
-	result_counter = 0
+		message_list.append("hour: " + dict["hour"] + "\n" +
+		 "times: " + dict["times"] + "\n")
 		
 	uncommon_driving_times = get_least_common_driving_times_control_room_data()
+	message_list.append("Least common driving times: ")
 	for dict in uncommon_driving_times:
-		c.drawString(position_x*cm, position_y*cm, "hour: " + dict["hour"])
-		c.drawString(position_x*cm, (position_y - 0.5)*cm, "times: " + dict["times"])
-		if result_counter == 0:
-			c.setFont("Helvetica", 16)
-			c.drawString(position_x*cm, 27*cm, "Least common driving times")
-			c.setFont("Helvetica", 12)
-		result_counter += 1
-		position_y -= 2.5
-		if result_counter % 9 == 0 and result_counter != 0:
-			position_y = 26
-			c.showPage()
-	c.showPage()
-	position_y = 26
-	result_counter = 0
+		message_list.append("hour: " + dict["hour"] + "\n" +
+		 "times: " + dict["times"] + "\n")
 
 	places_longest_stays = get_locations_longest_stays_control_room_data()
+	message_list.append("Longest stays: ")
 	for dict in places_longest_stays:
-		c.drawString(position_x*cm, position_y*cm, "latitude: " + dict["latitude"])
-		c.drawString(position_x*cm, (position_y - 0.5)*cm, "longitude: " + dict["longitude"])
-		if result_counter == 0:
-			c.setFont("Helvetica", 16)
-			c.drawString(position_x*cm, 27*cm, "Longest stays")
-			c.setFont("Helvetica", 12)
-		result_counter += 1
-		position_y -= 2.5
-		if result_counter % 9 == 0 and result_counter != 0:
-			position_y = 26
-			c.showPage()
-	c.showPage()
-	position_y = 26
-	result_counter = 0
+		message_list.append("latitude: " + dict["latitude"] + "\n" +
+		 "longitude: " + dict["longitude"] + "\n")
 	
-	print "Created control room report"
-	c.save()
+	send_email("\n".join(message_list), "Control Room Report email")
+	
+def send_email(content, subject):
+	print "Sending " + email_type + " email..."
 
-def draw_front_page(c, title, front_page_text):
-	c.setFont("Helvetica", 24)
-	c.drawString(6*cm, 22*cm, title)
-	c.setFont("Helvetica", 12)
-	c.drawString(6*cm, 21*cm, "Created on " + (time.strftime("%d/%m/%Y")) + " at " + (time.strftime("%H:%M")))
-	c.drawString(6*cm, 20*cm, front_page_text)
-	c.setFont("Helvetica", 12)	
-	c.showPage()
+	msg = MIMEText(content)
+	msg['Subject'] = subject
+	msg['From'] = email_address_from
+	msg['To'] = email_address_to
+
+	try:
+		s = smtplib.SMTP('smtp.gmail.com', 587)
+		print "1"
+		s.starttls()
+		s.ehlo()
+		print "2"
+		s.login(email_address_from, email_password)								# Password should be inserted here. (I used my own password to test, but don't want it to go on github or someplace else to be seen by others)
+		print "3"
+		s.sendmail(email_address_from, email_address_to, msg.as_string())
+		print "4"
+		s.quit()
+	except smtplib.SMTPException:
+	   print "Unable to send email. Something may be wrong with the email addresses or password you put in."
 
 # Decides which report to make according to the user input
 def pick_report():
-	print "Picking report... " + report_type
+	print "Picking report type for email... " + email_type
 	
-	if report_type == "authority":
-		print "Create authority report"
-		create_authority_report(filename, directory)
-	elif report_type == "citygis":
-		print "Create citygis report"
-		create_CityGis_report(filename, directory)
-	elif report_type == "connections":
-		print "Create connections report"
-		create_connections_report(filename, directory)
-	elif report_type == "controlroom":	
+	if email_type == "authority":
+		print "Send authority email"
+		create_authority_report_email()
+	elif email_type == "citygis":
+		print "Send citygis email"
+		create_CityGis_report_email()
+	elif email_type == "connections":
+		print "Send connections email"
+		create_connections_report_email()
+	elif email_type == "controlroom":	
 		if unit_id != "" and check_unit_id() == True:
-			print "Create control room report"
-			create_control_room_report(filename, directory)
+			print "Send control room email"
+			create_control_room_report_email()
 		else:
 			sys.exit("You didn't provide a (correct) unit_id")
 	else:
-		sys.exit("You didn't provide any arguments. You should provide a filename, directory, report_type and optionally a unit_id")
+		sys.exit("You didn't provide any arguments. You should provide a filename, directory, email_type and optionally a unit_id")
 	
 # Call the starting functions
 if __name__ == "__main__":
