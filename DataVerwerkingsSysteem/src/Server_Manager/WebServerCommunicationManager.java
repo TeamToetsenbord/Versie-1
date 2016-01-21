@@ -34,6 +34,9 @@ public class WebServerCommunicationManager extends Thread{
         this.start();
     }
         
+    /**
+     * Create a new serversocket, if neccesary.
+     */
      private void createServerSocket(){
         if(serverSocket == null || serverSocket.isClosed()){
             try {
@@ -47,39 +50,21 @@ public class WebServerCommunicationManager extends Thread{
                    System.out.println(ex);
             }
         }
-    
     }
      
+     /**
+      * When a new socket connects to this application, handle it on a ClientSocketHandler thread. 
+      */
     private void getMessagesFromWebApp(){
-        String inputMessage = "";
         Socket socket = null;
         try {
             socket = serverSocket.accept();
-            boolean recieved = false;
-            
-            InputStreamReader in = new InputStreamReader(socket.getInputStream());
-            //While the client socket has not responded het, wait for it to send a message
-            while(!recieved){
-            while(in.ready()){
-                inputMessage += (char)in.read();
-                recieved = true;
-            }
-            }
-            
-            System.out.println("Message recieved: " + inputMessage + "(" + inputMessage.length() + ")");    
-            JSONObject json = new JSONObject(inputMessage);
-            handleJSONMessage(json, socket);
-               
-             
+            new ClientSocketHandler(socket);
         } catch (IOException ex) {
             System.out.println(ex);
-        } catch (JSONException ex) {
-            System.out.println(ex + inputMessage);
-            returnMessageToSocket("Error", socket);
-           
         }
-        
     }
+    
     @Override 
     public void run(){
        while(true){
@@ -92,7 +77,7 @@ public class WebServerCommunicationManager extends Thread{
      * @param json: the message
      * @param socket: the client socket
      */
-    private void handleJSONMessage(JSONObject json, Socket socket){
+    public static void handleJSONMessage(JSONObject json, Socket socket){
         try{
         if(!json.has("type")){
             JSONObject returnMessage = new JSONObject();
@@ -132,11 +117,10 @@ public class WebServerCommunicationManager extends Thread{
      * @throws JSONException
      * @throws IOException 
      */
-    private void doLogIn(JSONObject json, Socket socket) throws JSONException, IOException {
+    private static void doLogIn(JSONObject json, Socket socket) throws JSONException, IOException {
         String username = json.getString("username");
         String password = json.getString("password");
         String returnUserName = Database_Manager.logIn(username, password);
-        
         JSONObject returnJSON = new JSONObject();
         if(returnUserName == null){
             returnJSON.put("type", "error");
@@ -145,7 +129,6 @@ public class WebServerCommunicationManager extends Thread{
         returnJSON.put("type", "user");
         returnJSON.put("username", returnUserName);
         }
-        
         returnMessageToSocket(returnJSON.toString(), socket);
     }
     
@@ -155,7 +138,7 @@ public class WebServerCommunicationManager extends Thread{
      * @param socket: the original socket
      * @throws IOException 
      */
-    private void returnMessageToSocket(String message, Socket socket){
+    public static void returnMessageToSocket(String message, Socket socket){
         try {
             OutputStreamWriter out = new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8);
             out.write(message);
@@ -166,14 +149,27 @@ public class WebServerCommunicationManager extends Thread{
         }
     }
 
-    private void getReportData(JSONObject json, Socket socket) throws JSONException {
+    /**
+     * This method reads a report json message, and return the generated report to the client.
+     * @param json: the message json
+     * @param socket: the client socket
+     * @throws JSONException 
+     */
+    private static void getReportData(JSONObject json, Socket socket) throws JSONException {
         String reportType = json.getString("reportType");
         String unitId = json.getString("unitId");
         JSONObject jsonReport = Database_Manager.getLatestReportData(reportType, unitId);
         returnMessageToSocket(jsonReport.toString(), socket);
     }
 
-    private void newCSVFile(JSONObject json, Socket socket) throws JSONException {
+    /**
+     * This method reads a new .csv file JSON message, and sends it to the CSVFileReader.
+     * After that, the client recieves a thank you message.
+     * @param json: the JSON message 
+     * @param socket: the client socket
+     * @throws JSONException 
+     */
+    private static void newCSVFile(JSONObject json, Socket socket) throws JSONException {
        String path = json.getString("path");
        String CSVtype = json.getString("CSVFileType");
        CSVFileReader.readFileByType(CSVtype, path);
