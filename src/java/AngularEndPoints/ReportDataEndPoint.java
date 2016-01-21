@@ -31,7 +31,7 @@ public class ReportDataEndPoint{
         
         try {
             JSONObject json = new JSONObject(message);
-            System.out.println(json);
+            
             if(json.has("unitId")){
                 SessionHandler.setUnitIdForDataRecieverSession(json.getString("unitId"), session);
             }else{
@@ -41,7 +41,7 @@ public class ReportDataEndPoint{
            System.out.println(ex);
         }
         
-        return "Error";
+        return null;
     }
     
     @OnOpen

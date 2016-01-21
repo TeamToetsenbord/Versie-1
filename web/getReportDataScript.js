@@ -50,7 +50,8 @@ var ws;
          * @returns {undefined}
          */
         ws.onopen = function () {
-           
+            console.log("opening");
+            setUnitId();
         };
 
     })
