@@ -16,7 +16,7 @@ import time
 # the functions generating the reports are way too long, etc... It's  not pretty.
 # Sincerely, Rianne
 # ik krijg type rapport, naam, directory, unit_id (als dat nodig is)	
-# TODO: deze parameters implementeren ^^
+
 # TODO: emails doen, gewoon alleen de data er in
 
 # Creates the variables that will be assigned values based on the arguments used when running the script
@@ -26,7 +26,6 @@ report_type = ""
 unit_id = ""
 
 # Assigns the values of the arguments used when running the script to the right variables
-# TODO: Change these to a better method?
 def main(argv):
 	global filename
 	global directory
@@ -373,7 +372,7 @@ def get_least_common_driving_times_control_room_data():
 		 AND unit_id = '""" + unit_id + """'
 		GROUP BY hour_
 		ORDER BY Times_appeared ASC)t ;""")
-	rows2 = cur.fetchall()												#TODO what to do with the MEEGEGEVEN UNIT_ID, MOET DE GEBRUIKER ZELF AANGEVEN
+	rows2 = cur.fetchall()	
 	for row in rows2:
 		for json_dict in row:
 			data_row = {}
@@ -400,7 +399,7 @@ def get_locations_longest_stays_control_room_data():
 		 GROUP BY latitude, longitude 
 		 ORDER BY count(*) DESC
 		 LIMIT 10) AS results""")
-	rows2 = cur.fetchall()					#TODO Moet hier ook niet de tijd bij?
+	rows2 = cur.fetchall()
 	for row in rows2:
 		for json_dict in row:
 			data_row = {}
@@ -410,7 +409,7 @@ def get_locations_longest_stays_control_room_data():
 	return places_longest_stays
 	
 #TODO move these import thingies
-#import reportlab attributes, need to be imported separately
+# Import reportlab attributes, need to be imported separately
 from reportlab.pdfgen import canvas  
 from reportlab.lib.units import cm  
 from reportlab.platypus import Table, TableStyle, SimpleDocTemplate
@@ -746,15 +745,13 @@ def pick_report():
 		print "Create connections report"
 		create_connections_report(filename, directory)
 	elif report_type == "controlroom":	
-		if unit_id != "" and check_unit_id() == True:		# TODO: Send a query to check if the unit_id exists? (SELECT * FROM cars)
+		if unit_id != "" and check_unit_id() == True:
 			print "Create control room report"
 			create_control_room_report(filename, directory)
 		else:
 			sys.exit("You didn't provide a (correct) unit_id")
 	else:
 		sys.exit("You didn't provide any arguments. You should provide a filename, directory, report_type and optionally a unit_id")
-
-		# TODO: actually create all the reports
 	
 # Call the starting functions
 if __name__ == "__main__":
@@ -865,12 +862,8 @@ if __name__ == "__main__":
 	# print "-=-"
 	
 # print "Operation done successfully"
-	
-#create_CityGis_report("CityGis Report 6.pdf", "C:\Users\Rianne\Documents\NetBeansProjects\Versie-1")
-#create_pdf_report()
 
 # TODO: split into multiple classes?
-# TODO: move this?
 # TODO: Remove all commented stuff and all print thingies for testing
 
 # This closes the connection to the database
