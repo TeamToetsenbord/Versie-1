@@ -1,6 +1,7 @@
 import psycopg2
 import json
 import os
+import re
 import sys
 import reportlab
 import time
@@ -39,36 +40,23 @@ def main(argv):
 	print 'Number of arguments:', len(sys.argv), 'arguments.'
 	print 'Argument List:', str(sys.argv)
 
-def pick_report():
-	print "Picking report... " + report_type
-	
-	if report_type == "authority":
-		print "Create authority report"
-	elif report_type == "citygis":
-		print "Create citygis report"
-		create_CityGis_report(filename, directory)
-	elif report_type == "connections":
-		print "Create connections report"
-	elif report_type == "controlroom":
-		if unit_id == "":		# TODO: Send a query to check if the unit_id exists? (SELECT * FROM cars)
-			sys.exit("You didn't provide a unit_id")
-		else:
-			print "Create control room report"
-	else:
-		sys.exit("You didn't provide any arguments. You should provide a filename, directory, report_type and optionally a unit_id")
-
-		# TODO: actually create all the reports
-	
-if __name__ == "__main__":
-	main(sys.argv[1:])
-	pick_report()
-	
 # This sets up a connection to the database
 connection = psycopg2.connect(database="CityGis Data", user="postgres", password="toetsenbord", host="145.24.222.225", port="8000")
 print "Opened database successfully"
 
 # This creates a cursor with which to look through the database with
 cur = connection.cursor()
+
+def check_unit_id():
+	city_gis_data = []
+	cur.execute("""SELECT unit_id FROM cars""")
+	rows2 = cur.fetchall()
+	for row in rows2:
+		if unit_id == re.sub("[^0-9]", "", row[0]):
+			print "bestaat"
+			return True
+	print "bestaat niet"
+	return False
 
 # These are the function used to retrieve data from the database and convert it to usable dictionaries
 def get_authority_report_data():
@@ -430,26 +418,74 @@ def create_pdf_report():
 	c.drawString(9*cm, 22*cm, "Hello World!")  								# Fonts: can only use the standard 14 fonts that come with acrobat reader
 	c.save()
 
+def create_authority_report(filename, filedir):
+	filepath = os.path.join(filedir, filename)
+	c = canvas.Canvas(filepath) 	
+	draw_front_page(c, "Authority Report")
+	print "Created Authority report"
+	c.save()
+	
 def create_CityGis_report(filename, filedir):
-	print "Creating report..."
 	filepath = os.path.join(filedir, filename)
 	c = canvas.Canvas(filepath) 					
 	draw_front_page(c, "CityGis Report")
-	c.setFont("Helvetica", 12)	
 	c.drawString(9*cm, 22*cm, "Hello World!")
 	#Table(get_CityGis_report_data(), colWidths=2*cm, rowHeights=2*cm, style=None, splitByRow=1)
 	#test_table(c)
 	print "Created CityGis report"
 	c.save()
 	
+def create_connections_report(filename, filedir):
+	filepath = os.path.join(filedir, filename)
+	c = canvas.Canvas(filepath)
+	draw_front_page(c, "Connections Report")
+	print "Created connections report"
+	c.save()
+
+def create_control_room_report(filename, filedir):
+	filepath = os.path.join(filedir, filename)
+	c = canvas.Canvas(filepath)
+	draw_front_page(c, "Control Room Report")
+	print "Created control room report"
+	c.save()
+
 def draw_front_page(c, title):
 	c.setFont("Helvetica", 18)
 	c.drawString(8*cm, 22*cm, title)
 	c.setFont("Helvetica", 12)
 	c.drawString(8*cm, 21*cm, "test")
 	c.drawString(8*cm, 20*cm, "Created on " + (time.strftime("%d/%m/%Y")) + " at " + (time.strftime("%H:%M")))
+	c.setFont("Helvetica", 12)	
 	c.showPage()
 
+# Decides which report to make according to the user input
+def pick_report():
+	print "Picking report... " + report_type
+	
+	if report_type == "authority":
+		print "Create authority report"
+		create_authority_report(filename, directory)
+	elif report_type == "citygis":
+		print "Create citygis report"
+		create_CityGis_report(filename, directory)
+	elif report_type == "connections":
+		print "Create connections report"
+		create_connections_report(filename, directory)
+	elif report_type == "controlroom":	
+		if unit_id != "" and check_unit_id() == True:		# TODO: Send a query to check if the unit_id exists? (SELECT * FROM cars)
+			print "Create control room report"
+			create_control_room_report(filename, directory)
+		else:
+			sys.exit("You didn't provide a (correct) unit_id")
+	else:
+		sys.exit("You didn't provide any arguments. You should provide a filename, directory, report_type and optionally a unit_id")
+
+		# TODO: actually create all the reports
+	
+if __name__ == "__main__":
+	main(sys.argv[1:])
+	pick_report()
+	
 # def test_table(c):
 	# # container for the 'Flowable' objects
 	# elements = []
@@ -479,17 +515,17 @@ def draw_front_page(c, title):
 # print "Operation done successfully"
 
 #testing get_CityGis_report_data function
-city_gis_data = get_CityGis_report_data()
-for dict in city_gis_data:
-	print "cs latitude: " + dict["cs latitude"]
-	print "cs longitude: " + dict["cs longitude"]
-	print "cs speed: " + dict["cs speed"]
-	print "cs course: " + dict["cs course"]
-	print "gps latitude: " + dict["gps latitude"]
-	print "gps longitude: " + dict["gps longitude"]
-	print "gps speed: " + dict["gps speed"]
-	print "gps course: " + dict["gps course"]
-	print "-=-"
+# city_gis_data = get_CityGis_report_data()
+# for dict in city_gis_data:
+	# print "cs latitude: " + dict["cs latitude"]
+	# print "cs longitude: " + dict["cs longitude"]
+	# print "cs speed: " + dict["cs speed"]
+	# print "cs course: " + dict["cs course"]
+	# print "gps latitude: " + dict["gps latitude"]
+	# print "gps longitude: " + dict["gps longitude"]
+	# print "gps speed: " + dict["gps speed"]
+	# print "gps course: " + dict["gps course"]
+	# print "-=-"
 
 # print "Operation done successfully"
 
@@ -573,6 +609,7 @@ for dict in city_gis_data:
 
 # TODO: split into multiple classes?
 # TODO: move this?
+# TODO: Remove all commented stuff and all print thingies for testing
 
 # This closes the connection to the database
 connection.commit()
