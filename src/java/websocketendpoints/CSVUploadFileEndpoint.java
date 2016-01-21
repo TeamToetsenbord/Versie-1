@@ -33,8 +33,6 @@ public class CSVUploadFileEndpoint {
     public String onMessage(String message) {
         try{
         return ServerManager.sendAndRecieveMessageToServer(new JSONObject(message));
-        } catch (IOException ex) {
-            return "Sorry, an error occured...";
         } catch (JSONException ex) {
             return "Sorry, not an JSONObject!";
         }

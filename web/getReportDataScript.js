@@ -12,19 +12,27 @@ var ws;
         ws = new WebSocket("ws://" + document.location.host + 
           document.location.pathname + "reportdataendpoint");
  
+        /**
+         * Method for recieving messages.
+         * Should be updated every minute.
+         * @param {type} event: the message
+         * @returns {undefined}
+         */  
         ws.onmessage = function (event) {
 
         console.log('message: ', event.data);
 
-        var response;
+        var jsonResponse;
         //try to get the json object from the server
         try {
-            response = angular.fromJson(event.data);
-            console.log("jsonMessage: ", response );
+            jsonResponse = angular.fromJson(event.data);
+            // types: report, error, allUnitIs
+            // report types: {Control_Room, Connections, Authority, CityGis, } 
+            console.log("jsonMessage: ", jsonResponse );
         } catch (e) {
             console.log('error: ', e);
 
-            response = {'error': e};
+            jsonResponse = {'error': e};
 
             }
         };
@@ -37,9 +45,12 @@ var ws;
             console.log('connection closed', event);
         };
 
+        /**
+         * Set the unit id of this socket to the user unit id
+         * @returns {undefined}
+         */
         ws.onopen = function () {
-            console.log('connection open');
-            ws.send('HELLO SERVER');
+           
         };
 
     })
@@ -47,3 +58,22 @@ var ws;
 function sendDataRequest(){
     
 }
+
+/**
+ * Get all unit id's from the database.
+ * @returns {undefined}
+ */
+function getUnitIdsFromDB(){
+    var json = {};
+    json.type = "getUnitIds";
+    ws.send(JSON.stringify(json));
+}
+
+function setUnitId(){
+     //Todo send current UnitId
+            var json = {};
+            json.unitId = "999";
+            ws.send(JSON.stringify(json));
+    
+    }
+

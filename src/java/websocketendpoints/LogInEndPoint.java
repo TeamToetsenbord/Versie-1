@@ -22,7 +22,7 @@ import session.SessionHandler;
 
 /**
  *
- * @author School
+ * @author Elize
  */
 @ServerEndpoint("/login")
 public class LogInEndPoint {
@@ -35,7 +35,7 @@ public class LogInEndPoint {
         try{
             JSONObject json = new JSONObject(message);
             if(json.has("type") && json.get("type").equals("logIn")){
-                sessionHandler.addSession(session, json.getString("username"), json.getString("password"));
+                sessionHandler.addLogInSession(session, json.getString("username"), json.getString("password"));
                 return "Logged in";
             }else{
                 return "not the right json: " + json;
@@ -54,10 +54,7 @@ public class LogInEndPoint {
     
     @OnClose
     public void onClose(Session session, CloseReason closeReason){
-        System.out.println("closing: " + session);
-        sessionHandler.removeSession(session);
-        System.out.println("Close");
-    
+        sessionHandler.removeLogInSession(session);    
     }
     
     

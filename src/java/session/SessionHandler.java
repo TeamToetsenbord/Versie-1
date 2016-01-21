@@ -25,9 +25,10 @@ import org.json.JSONObject;
  * @author Elize
  */
 public class SessionHandler {
-    private final Set<LogInSession> sessions = new HashSet<>();
+    private static Set<LogInSession> sessions = new HashSet<>();
+    private static Set<DataRecieverSession> dataRecieverSessions = new HashSet<>();
     
-    public void addSession(Session session, String username, String password){
+    public static void addLogInSession(Session session, String username, String password){
         try {
         Object user = logIn(username, password);
         if(user != null){
@@ -43,10 +44,11 @@ public class SessionHandler {
         
     }
     
-    public void removeSession(Session session) {
+    public static void removeLogInSession(Session session) {
         for(LogInSession loginSession: sessions){
             if(loginSession.getSession().equals(session)){
                 sessions.remove(loginSession);
+                break;
             }
         }
     }
@@ -60,18 +62,57 @@ public class SessionHandler {
             json.put("username", username);
             json.put("password", password);
             String returnMessage = ServerManager.sendAndRecieveMessageToServer(json);
-            System.out.println("I got: " + returnMessage);
-            //TODO test it!
-            if(!returnMessage.equals("Not a user")){
+            JSONObject returnedMessageJSON = new JSONObject(returnMessage);
+            String returndedUsername = returnedMessageJSON.getString("username");
+            if(returndedUsername.equals("Not a user!")){
                 user = null;
+            }else{
+             user = returndedUsername;
             }            
         } catch (JSONException ex) {
-            System.out.println(ex);
-        } catch (IOException ex) {
             System.out.println(ex);
         }
          
          return user;
      }
+     
+     public static void addDataRecieverSession(Session session){
+         dataRecieverSessions.add(new DataRecieverSession(session));
+         
+     }
+     
+     /**
+      * After the first DataRecieverSession has recieved an unitId, the DataGetterThread should be started.
+      * @param unitId
+      * @param session 
+      */
+     public static void setUnitIdForDataRecieverSession(String unitId, Session session){
+         for(DataRecieverSession dataRecieverSession: dataRecieverSessions){
+            if(dataRecieverSession.getSession().equals(session)){
+                dataRecieverSession.setUnitID(unitId);
+                break;
+             }   
+         }
+         
+         DataGetterHandler.startIfNeccesary();
+     }
+     
+    public static void removeDataRecieverSession(Session session){
+            for(DataRecieverSession dataRecieverSession: dataRecieverSessions){
+            if(dataRecieverSession.getSession().equals(session)){
+                dataRecieverSessions.remove(dataRecieverSession);
+                break;
+             }   
+         }
+        DataGetterHandler.stopIfNeccesary();
+    }
+     
+
+    public static Set<DataRecieverSession> getDataRecieverSessions() {
+        return dataRecieverSessions;
+    }
+     
+     
+     
      
 }
