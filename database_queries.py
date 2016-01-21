@@ -6,9 +6,15 @@ import sys
 import reportlab
 import time
 
+
 # installed: psycopg2
 # reportlab with easy_install reportlab, then downloaded c++ thingy from https://www.microsoft.com/en-us/download/details.aspx?id=44266, VCForPython27
 
+# TODO: Write a note about how bad the code is
+# Dear person reviewing this code,
+# I'd just like to apologize for this terrible code. There's repeated code everywhere, everything is in the same class, the reports that are generated are terrible, 
+# the functions generating the reports are way too long, etc... It's  not pretty.
+# Sincerely, Rianne
 # ik krijg type rapport, naam, directory, unit_id (als dat nodig is)	
 # TODO: deze parameters implementeren ^^
 # TODO: emails doen, gewoon alleen de data er in
@@ -47,15 +53,14 @@ print "Opened database successfully"
 # This creates a cursor with which to look through the database with
 cur = connection.cursor()
 
+# This function checks if the unit id given by the user exists in the database
 def check_unit_id():
 	city_gis_data = []
 	cur.execute("""SELECT unit_id FROM cars""")
 	rows2 = cur.fetchall()
 	for row in rows2:
 		if unit_id == re.sub("[^0-9]", "", row[0]):
-			print "bestaat"
 			return True
-	print "bestaat niet"
 	return False
 
 # These are the function used to retrieve data from the database and convert it to usable dictionaries
@@ -344,7 +349,7 @@ def get_most_common_driving_times_control_room_data():
 		SELECT EXTRACT(HOUR FROM event_date) AS hour_, count(*) AS Times_appeared
 		FROM car_status_events 
 		WHERE powerstatus = TRUE 
-		-- AND unit_id = MEEGEGEVEN UNIT_ID, MOET DE GEBRUIKER ZELF AANGEVEN
+		 AND unit_id = '""" + unit_id + """'
 		GROUP BY hour_
 		ORDER BY Times_appeared DESC)t ;""")
 	rows2 = cur.fetchall()
@@ -365,7 +370,7 @@ def get_least_common_driving_times_control_room_data():
 		SELECT EXTRACT(HOUR FROM event_date) AS hour_, count(*) AS Times_appeared
 		FROM car_status_events 
 		WHERE powerstatus = TRUE 
-		-- AND unit_id = MEEGEGEVEN UNIT_ID, MOET DE GEBRUIKER ZELF AANGEVEN
+		 AND unit_id = '""" + unit_id + """'
 		GROUP BY hour_
 		ORDER BY Times_appeared ASC)t ;""")
 	rows2 = cur.fetchall()												#TODO what to do with the MEEGEGEVEN UNIT_ID, MOET DE GEBRUIKER ZELF AANGEVEN
@@ -389,7 +394,7 @@ def get_locations_longest_stays_control_room_data():
 		(SELECT event_date, unit_id 
 		 FROM car_status_events 
 		 WHERE powerstatus = false
-		-- AND unit_id = GEGEVEN USERNAME DOOR DE USER
+		 AND unit_id = '""" + unit_id + """' 
 		) cse
 		 ON cse.event_date = cpd.event_date AND cse.unit_id = cpd.unit_id
 		 GROUP BY latitude, longitude 
@@ -408,53 +413,322 @@ def get_locations_longest_stays_control_room_data():
 #import reportlab attributes, need to be imported separately
 from reportlab.pdfgen import canvas  
 from reportlab.lib.units import cm  
-from reportlab.platypus import Table, TableStyle
+from reportlab.platypus import Table, TableStyle, SimpleDocTemplate
 from reportlab.lib import colors
 
+# These are the methods used to create the pdf reports with reportlab
+# Note about Fonts: can only use the standard 14 fonts that come with acrobat reader
 def create_pdf_report():
 	c = canvas.Canvas("hello2.pdf") 
 	draw_front_page(c, "Hello")
 	c.setFont("Helvetica", 12)
-	c.drawString(9*cm, 22*cm, "Hello World!")  								# Fonts: can only use the standard 14 fonts that come with acrobat reader
+	c.drawString(9*cm, 22*cm, "Hello World!")  								
 	c.save()
 
 def create_authority_report(filename, filedir):
 	filepath = os.path.join(filedir, filename)
 	c = canvas.Canvas(filepath) 	
-	draw_front_page(c, "Authority Report")
+	front_page_text = "This report shows the most visited places and the amount of visits."
+	draw_front_page(c, "Authority Report", front_page_text)
+
+	position_x = 4
+	position_y = 26
+	result_counter = 0
+	
+	most_visited_places, amount_of_visits = get_authority_report_data()
+	for dict in most_visited_places:
+		c.drawString(position_x*cm, (position_y)*cm, "latitude: " + dict["latitude"])
+		c.drawString(position_x*cm, (position_y - 0.5)*cm, "longitude: " + dict["longitude"])
+		c.drawString(position_x*cm, (position_y - 1.0)*cm,"amount of visits: " + dict["amount of visits"])
+		if result_counter == 0:
+			c.setFont("Helvetica", 16)
+			c.drawString(position_x*cm, 27*cm, "Most visited places")
+			c.setFont("Helvetica", 12)
+		result_counter += 1
+		position_y -= 3
+		if result_counter % 7 == 0 and result_counter != 0:
+			position_y = 26
+			c.showPage()
+	c.showPage()
+	position_y = 26
+	result_counter = 0
+	
+	for dict in amount_of_visits:
+		c.drawString(position_x*cm, (position_y)*cm, "latitude: " + dict["latitude"])
+		c.drawString(position_x*cm, (position_y - 0.5)*cm, "longitude: " + dict["longitude"])
+		c.drawString(position_x*cm, (position_y - 1.0)*cm, "amount of visits: " + dict["amount of visits"])
+		if result_counter == 0:
+			c.setFont("Helvetica", 16)
+			c.drawString(position_x*cm, 27*cm, "Amount of visits")
+			c.setFont("Helvetica", 12)
+		result_counter += 1
+		position_y -= 3
+		if result_counter % 7 == 0 and result_counter != 0:
+			position_y = 26
+			c.showPage()
 	print "Created Authority report"
 	c.save()
 	
 def create_CityGis_report(filename, filedir):
 	filepath = os.path.join(filedir, filename)
-	c = canvas.Canvas(filepath) 					
-	draw_front_page(c, "CityGis Report")
-	c.drawString(9*cm, 22*cm, "Hello World!")
+	# doc = SimpleDocTemplate(filepath)
+	c = canvas.Canvas(filepath)
+	front_page_text = "This report shows all of the occasions on which the gps and car system coordinates did not match."
+	draw_front_page(c, "CityGis Report", front_page_text)
 	#Table(get_CityGis_report_data(), colWidths=2*cm, rowHeights=2*cm, style=None, splitByRow=1)
-	#test_table(c)
+	# container for the 'Flowable' objects
+	# elements = []
+	# data= [['00', '01', '02', '03', '04'],
+		   # ['10', '11', '12', '13', '14'],
+		   # ['20', '21', '22', '23', '24'],
+		   # ['30', '31', '32', '33', '34']]
+	# t=Table(data,5*[2*cm], 4*[2*cm])
+	# t.setStyle(TableStyle([('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
+                                        # ('BOX', (0, 0), (-1, -1), 0.25, colors.black)]))
+	# elements.append(t)
+	# elements.append(c)
+	# # write the document to disk
+	# doc.build(elements)
+	position_x = 4
+	position_y = 26
+	result_counter = 0
+	city_gis_data = get_CityGis_report_data()
+	for dict in city_gis_data:
+		c.drawString(position_x*cm, position_y*cm, "Car system:")
+		c.drawString(position_x*cm, (position_y - 0.5)*cm, "cs latitude: " + dict["cs latitude"])
+		c.drawString(position_x*cm, (position_y - 1.0)*cm,"cs longitude: " + dict["cs longitude"])
+		c.drawString(position_x*cm, (position_y - 1.5)*cm,"cs speed: " + dict["cs speed"])
+		c.drawString(position_x*cm, (position_y - 2.0)*cm,"cs course: " + dict["cs course"])
+		c.drawString(position_x*cm, (position_y - 2.5)*cm, "GPS:")
+		c.drawString(position_x*cm, (position_y - 3.0)*cm,"gps latitude: " + dict["gps latitude"])
+		c.drawString(position_x*cm, (position_y - 3.5)*cm,"gps longitude: " + dict["gps longitude"])
+		c.drawString(position_x*cm, (position_y - 4.0)*cm,"gps speed: " + dict["gps speed"])
+		c.drawString(position_x*cm, (position_y - 4.5)*cm,"gps course: " + dict["gps course"])
+		result_counter += 1
+		position_y -= 6
+		if result_counter % 4 == 0 and result_counter != 0:
+			position_y = 26
+			c.showPage()
 	print "Created CityGis report"
 	c.save()
 	
 def create_connections_report(filename, filedir):
 	filepath = os.path.join(filedir, filename)
 	c = canvas.Canvas(filepath)
-	draw_front_page(c, "Connections Report")
+	front_page_text = "This report gives an overview of the quality of the different connections types."
+	draw_front_page(c, "Connections Report", front_page_text)
+	
+	position_x = 4
+	position_y = 26
+	result_counter = 0
+	best_overall_connection_locations, worst_overall_connection_locations = get_overall_connections_report_data()
+	for dict in best_overall_connection_locations:
+		c.drawString(position_x*cm, position_y*cm, "latitude: " + dict["latitude"])
+		c.drawString(position_x*cm, (position_y - 0.5)*cm, "longitude: " + dict["longitude"])
+		if result_counter == 0:
+			c.setFont("Helvetica", 16)
+			c.drawString(position_x*cm, 27*cm, "Best overall connections")
+			c.setFont("Helvetica", 12)
+		result_counter += 1
+		position_y -= 2.5
+		if result_counter % 9 == 0 and result_counter != 0:
+			position_y = 26
+			c.showPage()
+	c.showPage()
+	position_y = 26
+	result_counter = 0
+	
+	for dict in worst_overall_connection_locations:
+		c.drawString(position_x*cm, position_y*cm, "latitude: " + dict["latitude"])
+		c.drawString(position_x*cm, (position_y - 0.5)*cm, "longitude: " + dict["longitude"])
+		if result_counter == 0:
+			c.setFont("Helvetica", 16)
+			c.drawString(position_x*cm, 27*cm, "Worst overall connections")
+			c.setFont("Helvetica", 12)
+		result_counter += 1
+		position_y -= 2.5
+		if result_counter % 9 == 0 and result_counter != 0:
+			position_y = 26
+			c.showPage()
+	c.showPage()
+	position_y = 26
+	result_counter = 0
+		
+	best_hsdpa_connection_locations, worst_hsdpa_connection_locations = get_hsdpa_connections_report_data()
+	for dict in best_hsdpa_connection_locations:
+		c.drawString(position_x*cm, position_y*cm,  "latitude: " + dict["latitude"])
+		c.drawString(position_x*cm, (position_y - 0.5)*cm,  "longitude: " + dict["longitude"])
+		if result_counter == 0:
+			c.setFont("Helvetica", 16)
+			c.drawString(position_x*cm, 27*cm, "Best hsdpa connections")
+			c.setFont("Helvetica", 12)
+		result_counter += 1
+		position_y -= 2.5
+		if result_counter % 9 == 0 and result_counter != 0:
+			position_y = 26
+			c.showPage()
+	c.showPage()
+	position_y = 26
+	result_counter = 0
+	
+	for dict in worst_hsdpa_connection_locations:
+		c.drawString(position_x*cm, position_y*cm,  "latitude: " + dict["latitude"])
+		c.drawString(position_x*cm, (position_y - 0.5)*cm,  "longitude: " + dict["longitude"])
+		if result_counter == 0:
+			c.setFont("Helvetica", 16)
+			c.drawString(position_x*cm, 27*cm, "Worst hsdpa connections")
+			c.setFont("Helvetica", 12)
+		result_counter += 1
+		position_y -= 2.5
+		if result_counter % 9 == 0 and result_counter != 0:
+			position_y = 26
+			c.showPage()
+	c.showPage()
+	position_y = 26
+	result_counter = 0
+	
+	best_tcp_connections, worst_tcp_connections = get_tcp_connections_report_data()
+	for dict in best_tcp_connections:
+		c.drawString(position_x*cm, position_y*cm, "latitude: " + dict["latitude"])
+		c.drawString(position_x*cm, (position_y - 0.5)*cm,  "longitude: " + dict["longitude"])
+		if result_counter == 0:
+			c.setFont("Helvetica", 16)
+			c.drawString(position_x*cm, 27*cm, "Best tcp connections")
+			c.setFont("Helvetica", 12)
+		result_counter += 1
+		position_y -= 2.5
+		if result_counter % 9 == 0 and result_counter != 0:
+			position_y = 26
+			c.showPage()
+	c.showPage()
+	position_y = 26
+	result_counter = 0
+	
+	for dict in worst_tcp_connections:
+		c.drawString(position_x*cm, position_y*cm,  "latitude: " + dict["latitude"])
+		c.drawString(position_x*cm, (position_y - 0.5)*cm,  "longitude: " + dict["longitude"])
+		if result_counter == 0:
+			c.setFont("Helvetica", 16)
+			c.drawString(position_x*cm, 27*cm, "Worst tcp connections")
+			c.setFont("Helvetica", 12)
+		result_counter += 1
+		position_y -= 2.5
+		if result_counter % 9 == 0 and result_counter != 0:
+			position_y = 26
+			c.showPage()
+	c.showPage()
+	position_y = 26
+	result_counter = 0
+	
 	print "Created connections report"
 	c.save()
 
 def create_control_room_report(filename, filedir):
 	filepath = os.path.join(filedir, filename)
 	c = canvas.Canvas(filepath)
-	draw_front_page(c, "Control Room Report")
+	front_page_text = "This report contains data for the control room"
+	draw_front_page(c, "Control Room Report", front_page_text)
+	
+	position_x = 4
+	position_y = 26
+	result_counter = 0
+	highest_speed_locations = get_highest_speed_control_room_data()
+	for dict in highest_speed_locations:
+		c.drawString(position_x*cm, position_y*cm, "unit id: " + dict["unit id"])
+		c.drawString(position_x*cm, (position_y - 0.5)*cm, "latitude: " + dict["latitude"])
+		c.drawString(position_x*cm, (position_y - 1.0)*cm, "longitude: " + dict["longitude"])
+		c.drawString(position_x*cm, (position_y - 1.5)*cm, "max speed: " + dict["max"])
+		if result_counter == 0:
+			c.setFont("Helvetica", 16)
+			c.drawString(position_x*cm, 27*cm, "Top 10 highest speeds")
+			c.setFont("Helvetica", 12)
+		result_counter += 1
+		position_y -= 3.5
+		if result_counter % 5 == 0 and result_counter != 0:
+			position_y = 26
+			c.showPage()
+	c.showPage()
+	position_y = 26
+	result_counter = 0
+		
+	least_visited_locations = get_least_visited_control_room_data()
+	for dict in least_visited_locations:
+		c.drawString(position_x*cm, position_y*cm, "latitude: " + dict["latitude"])
+		c.drawString(position_x*cm, (position_y - 0.5)*cm, "longitude: " + dict["longitude"])
+		c.drawString(position_x*cm, (position_y - 1.0)*cm, "amount of visits: " + dict["amount of visits"])
+		if result_counter == 0:
+			c.setFont("Helvetica", 16)
+			c.drawString(position_x*cm, 27*cm, "Top 10 visited locations")
+			c.setFont("Helvetica", 12)
+		result_counter += 1
+		position_y -= 3
+		if result_counter % 5 == 0 and result_counter != 0:
+			position_y = 26
+			c.showPage()
+	c.showPage()
+	position_y = 26
+	result_counter = 0
+		
+	common_driving_times = get_most_common_driving_times_control_room_data()
+	for dict in common_driving_times:
+		c.drawString(position_x*cm, position_y*cm, "hour: " + dict["hour"])
+		c.drawString(position_x*cm, (position_y - 0.5)*cm, "times: " + dict["times"])
+		if result_counter == 0:
+			c.setFont("Helvetica", 16)
+			c.drawString(position_x*cm, 27*cm, "Most common driving times")
+			c.setFont("Helvetica", 12)
+		result_counter += 1
+		position_y -= 2.5
+		if result_counter % 9 == 0 and result_counter != 0:
+			position_y = 26
+			c.showPage()
+	c.showPage()
+	position_y = 26
+	result_counter = 0
+		
+	uncommon_driving_times = get_least_common_driving_times_control_room_data()
+	for dict in uncommon_driving_times:
+		c.drawString(position_x*cm, position_y*cm, "hour: " + dict["hour"])
+		c.drawString(position_x*cm, (position_y - 0.5)*cm, "times: " + dict["times"])
+		if result_counter == 0:
+			c.setFont("Helvetica", 16)
+			c.drawString(position_x*cm, 27*cm, "Least common driving times")
+			c.setFont("Helvetica", 12)
+		result_counter += 1
+		position_y -= 2.5
+		if result_counter % 9 == 0 and result_counter != 0:
+			position_y = 26
+			c.showPage()
+	c.showPage()
+	position_y = 26
+	result_counter = 0
+
+	places_longest_stays = get_locations_longest_stays_control_room_data()
+	for dict in places_longest_stays:
+		c.drawString(position_x*cm, position_y*cm, "latitude: " + dict["latitude"])
+		c.drawString(position_x*cm, (position_y - 0.5)*cm, "longitude: " + dict["longitude"])
+		if result_counter == 0:
+			c.setFont("Helvetica", 16)
+			c.drawString(position_x*cm, 27*cm, "Longest stays")
+			c.setFont("Helvetica", 12)
+		result_counter += 1
+		position_y -= 2.5
+		if result_counter % 9 == 0 and result_counter != 0:
+			position_y = 26
+			c.showPage()
+	c.showPage()
+	position_y = 26
+	result_counter = 0
+	
 	print "Created control room report"
 	c.save()
 
-def draw_front_page(c, title):
-	c.setFont("Helvetica", 18)
-	c.drawString(8*cm, 22*cm, title)
+def draw_front_page(c, title, front_page_text):
+	c.setFont("Helvetica", 24)
+	c.drawString(6*cm, 22*cm, title)
 	c.setFont("Helvetica", 12)
-	c.drawString(8*cm, 21*cm, "test")
-	c.drawString(8*cm, 20*cm, "Created on " + (time.strftime("%d/%m/%Y")) + " at " + (time.strftime("%H:%M")))
+	c.drawString(6*cm, 21*cm, "Created on " + (time.strftime("%d/%m/%Y")) + " at " + (time.strftime("%H:%M")))
+	c.drawString(6*cm, 20*cm, front_page_text)
 	c.setFont("Helvetica", 12)	
 	c.showPage()
 
@@ -482,22 +756,10 @@ def pick_report():
 
 		# TODO: actually create all the reports
 	
+# Call the starting functions
 if __name__ == "__main__":
 	main(sys.argv[1:])
 	pick_report()
-	
-# def test_table(c):
-	# # container for the 'Flowable' objects
-	# elements = []
-	 
-	# data= [['00', '01', '02', '03', '04'],
-		   # ['10', '11', '12', '13', '14'],
-		   # ['20', '21', '22', '23', '24'],
-		   # ['30', '31', '32', '33', '34']]
-	# t=Table(data,5*[2*cm], 4*[2*cm])
-	# elements.append(t)
-	# # write the document to disk
-	# t.drawOn(c, 1*cm, 9*cm)
 	
 #testing get_authority_report_data function
 # most_visited_places, amount_of_visits = get_authority_report_data()
