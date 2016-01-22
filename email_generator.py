@@ -63,7 +63,7 @@ def get_authority_report_data():
 	print "Getting authority report data..."
 	
 	most_visited_places = []
-	amount_of_visits = []
+	most_stopped_places = []
 	cur.execute("""SELECT to_json(mostvisited) as most_visited_places
 		, to_json(moststopped) as most_stopped_places FROM 
 		(SELECT DISTINCT latitude, longitude, COUNT(*) as amount_of_visits
@@ -88,14 +88,14 @@ def get_authority_report_data():
 				data_row["latitude"] = str(json_dict["latitude"])
 				data_row["longitude"] = str(json_dict["longitude"]) 
 				data_row["amount of visits"] =  str(json_dict["amount_of_visits"])
-				amount_of_visits.append(data_row)
+				most_stopped_places.append(data_row)
 			else: 
 				data_row = {}
 				data_row["latitude"] = str(json_dict["latitude"])
 				data_row["longitude"] = str(json_dict["longitude"])
 				data_row["amount of visits"] = str(json_dict["amount_of_visits"])
 				most_visited_places.append(data_row)
-	return (most_visited_places, amount_of_visits)
+	return (most_visited_places, most_stopped_places)
 
 def get_CityGis_report_data():
 	print "Getting CityGis report data..."
@@ -406,14 +406,14 @@ def get_locations_longest_stays_control_room_data():
 # These are the methods used to create the contents of the e-mails
 def create_authority_report_email():
 	message_list = []
-	most_visited_places, amount_of_visits = get_authority_report_data()
+	most_visited_places, most_stopped_places = get_authority_report_data()
 	message_list.append("Most visited places: ")
 	for dict in most_visited_places:
 		message_list.append("latitude: " + dict["latitude"] + "\n" +
 		"longitude: " + dict["longitude"] + "\n" +
 		"amount of visits: " + dict["amount of visits"] + "\n")
-	message_list.append("Amount of visits: ")
-	for dict in amount_of_visits:
+	message_list.append("Most stopped places: ")
+	for dict in most_stopped_places:
 		message_list.append("latitude: " + dict["latitude"] + "\n" +
 		"longitude: " + dict["longitude"] + "\n" +
 		"amount of visits: " + dict["amount of visits"] + "\n")

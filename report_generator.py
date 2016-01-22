@@ -68,7 +68,7 @@ def get_authority_report_data():
 	print "Getting authority report data..."
 	
 	most_visited_places = []
-	amount_of_visits = []
+	most_stopped_places = []
 	cur.execute("""SELECT to_json(mostvisited) as most_visited_places
 		, to_json(moststopped) as most_stopped_places FROM 
 		(SELECT DISTINCT latitude, longitude, COUNT(*) as amount_of_visits
@@ -93,14 +93,14 @@ def get_authority_report_data():
 				data_row["latitude"] = str(json_dict["latitude"])
 				data_row["longitude"] = str(json_dict["longitude"]) 
 				data_row["amount of visits"] =  str(json_dict["amount_of_visits"])
-				amount_of_visits.append(data_row)
+				most_stopped_places.append(data_row)
 			else: 
 				data_row = {}
 				data_row["latitude"] = str(json_dict["latitude"])
 				data_row["longitude"] = str(json_dict["longitude"])
 				data_row["amount of visits"] = str(json_dict["amount_of_visits"])
 				most_visited_places.append(data_row)
-	return (most_visited_places, amount_of_visits)
+	return (most_visited_places, most_stopped_places)
 
 def get_CityGis_report_data():
 	print "Getting CityGis report data..."
@@ -421,14 +421,14 @@ def create_pdf_report():
 def create_authority_report(filename, filedir):
 	filepath = os.path.join(filedir, filename)
 	c = canvas.Canvas(filepath) 	
-	front_page_text = "This report shows the most visited places and the amount of visits."
+	front_page_text = "This report shows the most visited places and the most stopped places."
 	draw_front_page(c, "Authority Report", front_page_text)
 
 	position_x = 4
 	position_y = 26
 	result_counter = 0
 	
-	most_visited_places, amount_of_visits = get_authority_report_data()
+	most_visited_places, most_stopped_places = get_authority_report_data()
 	for dict in most_visited_places:
 		c.drawString(position_x*cm, (position_y)*cm, "latitude: " + dict["latitude"])
 		c.drawString(position_x*cm, (position_y - 0.5)*cm, "longitude: " + dict["longitude"])
@@ -446,13 +446,13 @@ def create_authority_report(filename, filedir):
 	position_y = 26
 	result_counter = 0
 	
-	for dict in amount_of_visits:
+	for dict in most_stopped_places:
 		c.drawString(position_x*cm, (position_y)*cm, "latitude: " + dict["latitude"])
 		c.drawString(position_x*cm, (position_y - 0.5)*cm, "longitude: " + dict["longitude"])
 		c.drawString(position_x*cm, (position_y - 1.0)*cm, "amount of visits: " + dict["amount of visits"])
 		if result_counter == 0:
 			c.setFont("Helvetica", 16)
-			c.drawString(position_x*cm, 27*cm, "Amount of visits")
+			c.drawString(position_x*cm, 27*cm, "Most stopped places")
 			c.setFont("Helvetica", 12)
 		result_counter += 1
 		position_y -= 3
