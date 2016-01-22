@@ -6,7 +6,6 @@ import sys
 import smtplib
 from email.mime.text import MIMEText
 
-# TODO, CHANGE THIS TO MAIL STUFF
 # This file if run by calling (on the command line of from another program) python, then the filename (email_generator.py), then the email address you want to send the email from, 
 # then the password for the address you want to send the email from, then the email address you want to sent the email to, then the email type (authority, citygis, connections, controlroom), 
 # and then, if you want to create a control room report, a unit_id, all separated by spaces
@@ -15,15 +14,7 @@ from email.mime.text import MIMEText
 
 # installed: psycopg2
 # reportlab with easy_install reportlab, then downloaded c++ thingy from https://www.microsoft.com/en-us/download/details.aspx?id=44266, VCForPython27
-
-# TODO: Write a note about how bad the code is
-# Dear person reviewing this code,
-# I'd just like to apologize for this terrible code. There's repeated code everywhere, everything is in the same class, the reports that are generated are terrible, 
-# the functions generating the reports are way too long, etc... It's  not pretty. Also, this class is mostly just a copy of the other class.
-# Sincerely, Rianne
-# ik krijg type rapport, naam, directory, unit_id (als dat nodig is)	
-
-# TODO: emails doen, gewoon alleen de data er in
+# TODO remove?
 
 # Creates the variables that will be assigned values based on the arguments used when running the script
 email_address_from = ""
@@ -50,9 +41,6 @@ def main(argv):
 	email_password = email_password_arg
 	email_address_to = email_address_to_arg
 	email_type = email_type_arg
-	
-	print 'Number of arguments:', len(sys.argv), 'arguments.'
-	print 'Argument List:', str(sys.argv)
 
 # This sets up a connection to the database
 connection = psycopg2.connect(database="CityGis Data", user="postgres", password="toetsenbord", host="145.24.222.225", port="8000")
@@ -61,7 +49,7 @@ print "Opened database successfully"
 # This creates a cursor with which to look through the database with
 cur = connection.cursor()
 
-# This function checks if the unit id given by the user exists in the database
+# This function checks if the unit id given by the unit_id exists in the database
 def check_unit_id():
 	city_gis_data = []
 	cur.execute("""SELECT unit_id FROM cars""")
@@ -155,7 +143,6 @@ def get_CityGis_report_data():
 			city_gis_data.append(data_row)
 	return city_gis_data
 
-	
 # Connections report queries
 def get_overall_connections_report_data():
 	print "Getting connections report data..."
@@ -416,15 +403,8 @@ def get_locations_longest_stays_control_room_data():
 			data_row["latitude"] = str(json_dict["latitude"])
 			places_longest_stays.append(data_row)
 	return places_longest_stays
-	
-#TODO move these import thingies
-# Import reportlab attributes, need to be imported separately
-from reportlab.pdfgen import canvas  
-from reportlab.lib.units import cm  
-from reportlab.platypus import Table, TableStyle, SimpleDocTemplate
-from reportlab.lib import colors
 
-# These are the methods used to create the e-mails
+# These are the methods used to create the contents of the e-mails
 def create_authority_report_email():
 	message_list = []
 	most_visited_places, amount_of_visits = get_authority_report_data()
@@ -443,7 +423,6 @@ def create_authority_report_email():
 	
 def create_CityGis_report_email():
 	message_list = []
-	
 	city_gis_data = get_CityGis_report_data()
 	for dict in city_gis_data:
 		message_list.append("Car system: " + "\n" +
@@ -461,7 +440,6 @@ def create_CityGis_report_email():
 	
 def create_connections_report_email():
 	message_list = []
-	
 	best_overall_connection_locations, worst_overall_connection_locations = get_overall_connections_report_data()
 	message_list.append("Overall connections")
 	message_list.append("Best: ")
@@ -499,7 +477,6 @@ def create_connections_report_email():
 
 def create_control_room_report_email():
 	message_list = []
-	
 	highest_speed_locations = get_highest_speed_control_room_data()
 	message_list.append("Unit_id used:" + unit_id)
 	message_list.append("Highest speed: ")
@@ -536,24 +513,18 @@ def create_control_room_report_email():
 	
 	send_email("\n".join(message_list), "Control Room Report email")
 	
+# Sends an email with the previously specified contents from and to the email addresses specified by the user
 def send_email(content, subject):
-	print "Sending " + email_type + " email..."
-
 	msg = MIMEText(content)
 	msg['Subject'] = subject
 	msg['From'] = email_address_from
 	msg['To'] = email_address_to
-
 	try:
 		s = smtplib.SMTP('smtp.gmail.com', 587)
-		print "1"
 		s.starttls()
 		s.ehlo()
-		print "2"
-		s.login(email_address_from, email_password)								# Password should be inserted here. (I used my own password to test, but don't want it to go on github or someplace else to be seen by others)
-		print "3"
+		s.login(email_address_from, email_password)
 		s.sendmail(email_address_from, email_address_to, msg.as_string())
-		print "4"
 		s.quit()
 	except smtplib.SMTPException:
 	   print "Unable to send email. Something may be wrong with the email addresses or password you put in."
@@ -563,17 +534,13 @@ def pick_report():
 	print "Picking report type for email... " + email_type
 	
 	if email_type == "authority":
-		print "Send authority email"
 		create_authority_report_email()
 	elif email_type == "citygis":
-		print "Send citygis email"
 		create_CityGis_report_email()
 	elif email_type == "connections":
-		print "Send connections email"
 		create_connections_report_email()
 	elif email_type == "controlroom":	
 		if unit_id != "" and check_unit_id() == True:
-			print "Send control room email"
 			create_control_room_report_email()
 		else:
 			sys.exit("You didn't provide a (correct) unit_id")
@@ -584,113 +551,7 @@ def pick_report():
 if __name__ == "__main__":
 	main(sys.argv[1:])
 	pick_report()
-	
-#testing get_authority_report_data function
-# most_visited_places, amount_of_visits = get_authority_report_data()
-# for dict in most_visited_places:
-	# print "latitude: " + dict["latitude"]
-	# print "longitude: " + dict["longitude"]
-	# print "amount of visits: " + dict["amount of visits"]
-	# print "-=-"
-# for dict in amount_of_visits:
-	# print "latitude: " + dict["latitude"]
-	# print "longitude: " + dict["longitude"]
-	# print "amount of visits: " + dict["amount of visits"]
-	# print "-=-"
 
-# print "Operation done successfully"
-
-#testing get_CityGis_report_data function
-# city_gis_data = get_CityGis_report_data()
-# for dict in city_gis_data:
-	# print "cs latitude: " + dict["cs latitude"]
-	# print "cs longitude: " + dict["cs longitude"]
-	# print "cs speed: " + dict["cs speed"]
-	# print "cs course: " + dict["cs course"]
-	# print "gps latitude: " + dict["gps latitude"]
-	# print "gps longitude: " + dict["gps longitude"]
-	# print "gps speed: " + dict["gps speed"]
-	# print "gps course: " + dict["gps course"]
-	# print "-=-"
-
-# print "Operation done successfully"
-
-#testing get_overall_connections_report_data, get_hsdpa_connections_report_data and get_tcp_connections_report_data functions
-# best_overall_connection_locations, worst_overall_connection_locations = get_overall_connections_report_data()
-# print "Best: "
-# for dict in best_overall_connection_locations:
-	# print "latitude: " + dict["latitude"]
-	# print "longitude: " + dict["longitude"]
-	# print "-=-"
-# print "Worst: "
-# for dict in worst_overall_connection_locations:
-	# print "latitude: " + dict["latitude"]
-	# print "longitude: " + dict["longitude"]
-	# print "-=-"
-
-# best_hsdpa_connection_locations, worst_hsdpa_connection_locations = get_hsdpa_connections_report_data()
-# print "Best: "
-# for dict in best_hsdpa_connection_locations:
-	# print "latitude: " + dict["latitude"]
-	# print "longitude: " + dict["longitude"]
-	# print "-=-"
-# print "Worst: "
-# for dict in worst_hsdpa_connection_locations:
-	# print "latitude: " + dict["latitude"]
-	# print "longitude: " + dict["longitude"]
-	# print "-=-"
-	
-# best_tcp_connections, worst_tcp_connections = get_tcp_connections_report_data()
-# print "Best: "
-# for dict in best_tcp_connections:
-	# print "latitude: " + dict["latitude"]
-	# print "longitude: " + dict["longitude"]
-	# print "-=-"
-# print "Worst: "
-# for dict in worst_tcp_connections:
-	# print "latitude: " + dict["latitude"]
-	# print "longitude: " + dict["longitude"]
-	# print "-=-"	
-
-# print "Operation done successfully"
-
-#testing get_highest_speed_control_room_data, 
-# highest_speed_locations = get_highest_speed_control_room_data()
-# for dict in highest_speed_locations:
-	# print "unit id: " + dict["unit id"]
-	# print "latitude: " + dict["latitude"]
-	# print "longitude: " + dict["longitude"]
-	# print "max speed: " + dict["max"]
-	# print "-=-"	
-
-# least_visited_locations = get_least_visited_control_room_data()
-# for dict in least_visited_locations:
-	# print "latitude: " + dict["latitude"]
-	# print "longitude: " + dict["longitude"]
-	# print "amount of visits: " + dict["amount of visits"]
-	# print "-=-"	
-	
-# common_driving_times = get_most_common_driving_times_control_room_data()
-# for dict in common_driving_times:
-	# print "hour: " + dict["hour"]
-	# print "times: " + dict["times"]
-	# print "-=-"
-	
-# uncommon_driving_times = get_least_common_driving_times_control_room_data()
-# for dict in uncommon_driving_times:
-	# print "hour: " + dict["hour"]
-	# print "times: " + dict["times"]
-	# print "-=-"
-
-# places_longest_stays = get_locations_longest_stays_control_room_data()
-# for dict in places_longest_stays:
-	# print "latitude: " + dict["latitude"]
-	# print "longitude: " + dict["longitude"]
-	# print "-=-"
-	
-# print "Operation done successfully"
-
-# TODO: split into multiple classes?
 # TODO: Remove all commented stuff and all print thingies for testing
 
 # This closes the connection to the database
