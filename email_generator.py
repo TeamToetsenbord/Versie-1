@@ -10,7 +10,7 @@ from email.mime.text import MIMEText
 # then the password for the address you want to send the email from, then the email address you want to sent the email to, then the email type (authority, citygis, connections, controlroom), 
 # and then, if you want to create a control room report, a unit_id, all separated by spaces
 # The from email adress should be a gmail address
-# Example: python email_generator.py me.example@gmail.com you.whoisthis@hotmail.com authority
+# Example: python email_generator.py me.example@gmail.com Pass123 you.whoisthis@hotmail.com authority
 
 # installed: psycopg2
 # reportlab with easy_install reportlab, then downloaded c++ thingy from https://www.microsoft.com/en-us/download/details.aspx?id=44266, VCForPython27
