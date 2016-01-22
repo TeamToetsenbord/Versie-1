@@ -14,9 +14,7 @@ from reportlab.lib import colors
 # then the directory where you want to save it, then the report type (authority, citygis, connections, controlroom), then, if you want to create a control room report, a unit_id, all separated by spaces
 # Example: python report_generator.py CityGisReport.pdf C:\Users\Kyra\Documents controlroom 999
 
-# installed: psycopg2
-# reportlab with easy_install reportlab, then downloaded c++ thingy from https://www.microsoft.com/en-us/download/details.aspx?id=44266, VCForPython27
-# TODO remove?
+# installed: psycopg2, reportlab
 
 # Dear person reviewing this code,
 # I'd just like to apologize for this terrible code. There's repeated code everywhere, everything is in the same class, the reports that are generated are terrible, 

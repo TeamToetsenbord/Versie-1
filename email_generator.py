@@ -12,8 +12,7 @@ from email.mime.text import MIMEText
 # The from email adress should be a gmail address
 # Example: python email_generator.py me.example@gmail.com Pass123 you.whoisthis@hotmail.com authority
 
-# installed: psycopg2
-# reportlab with easy_install reportlab, then downloaded c++ thingy from https://www.microsoft.com/en-us/download/details.aspx?id=44266, VCForPython27
+# installed: psycopg2, reportlab
 
 # Creates the variables that will be assigned values based on the arguments used when running the script
 email_address_from = ""
