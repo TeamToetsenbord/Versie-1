@@ -14,7 +14,6 @@ from email.mime.text import MIMEText
 
 # installed: psycopg2
 # reportlab with easy_install reportlab, then downloaded c++ thingy from https://www.microsoft.com/en-us/download/details.aspx?id=44266, VCForPython27
-# TODO remove?
 
 # Creates the variables that will be assigned values based on the arguments used when running the script
 email_address_from = ""
@@ -551,8 +550,6 @@ def pick_report():
 if __name__ == "__main__":
 	main(sys.argv[1:])
 	pick_report()
-
-# TODO: Remove all commented stuff and all print thingies for testing
 
 # This closes the connection to the database
 connection.commit()

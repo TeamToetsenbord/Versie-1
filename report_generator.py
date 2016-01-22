@@ -736,9 +736,6 @@ def pick_report():
 if __name__ == "__main__":
 	main(sys.argv[1:])
 	pick_report()
-	
-
-# TODO: Remove all commented stuff and all print thingies for testing
 
 # This closes the connection to the database
 connection.commit()
