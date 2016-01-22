@@ -16,11 +16,6 @@ from reportlab.lib import colors
 
 # installed: psycopg2, reportlab
 
-# Dear person reviewing this code,
-# I'd just like to apologize for this terrible code. There's repeated code everywhere, everything is in the same class, the reports that are generated are terrible, 
-# the functions generating the reports are way too long, the other class is mostly just a copy of this one etc... It's  not pretty.
-# Sincerely, Rianne
-
 # Creates the variables that will be assigned values based on the arguments used when running the script
 filename = ""
 directory = ""
